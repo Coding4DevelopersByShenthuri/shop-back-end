@@ -13,6 +13,6 @@ const StaffSchema = new mongoose.Schema({
   imageUrl: { type: String }, // Added imageUrl
 }, { timestamps: true }); // Automatically manage createdAt and updatedAt fields
 
-const Staff = mongoose.model('staffs', StaffSchema);
+const Staff = mongoose.model('Staff', StaffSchema,'staff');
 
 module.exports = Staff;

@@ -10,6 +10,6 @@ const TaskSchema = new mongoose.Schema({
   assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff' }, // Reference to staff member
 });
 
-const Task = mongoose.model('tasks', TaskSchema);
+const Task = mongoose.model('Task', TaskSchema,'task');
 
 module.exports = Task;
