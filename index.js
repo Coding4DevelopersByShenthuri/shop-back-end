@@ -2,7 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./db');
-
+const path = require('path');
 const staffRoutes = require('./routes/staffRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 const productRoutes = require('./routes/productRoutes');
@@ -15,7 +15,8 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-
+// Serve static files from the 'uploads' directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Connect to the database
 connectDB().then(() => {
