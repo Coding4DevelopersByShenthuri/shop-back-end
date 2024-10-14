@@ -1,6 +1,20 @@
 const express = require('express');
 const router = express.Router();
 const staffService = require('../services/staffService');
+const multer = require('multer');
+
+
+// Configure Multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/'); // Directory for uploaded images
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`); // Naming the file
+  },
+});
+
+const upload = multer({ storage });
 
 // Add staff
 router.post('/add-staff', async (req, res) => {
