@@ -108,7 +108,7 @@ router.post('/upload-staff-image', upload.single('image'), async (req, res) => {
     };
     
     const result = await staffService.updateStaff(staffId, updateDoc);
-console.log(result)
+
     if (result.matchedCount === 0) {
       return res.status(404).send({ error: 'Staff not found' });
     }
