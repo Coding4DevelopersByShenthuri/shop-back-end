@@ -1,7 +1,7 @@
-const Notifications = require('../models/notificationsModel');
+const Product = require('../models/productModel');
 
 const getStockQuantity = async () => {
-  return await Notifications.find({});
+  return await Product.find({});
 };
 
 module.exports = {
