@@ -120,7 +120,7 @@ router.post('/upload-product-image', upload.single('image'), async (req, res) =>
     // Update the product document with image URL and path
     const updateDoc = {
       $set: {
-        imageUrl: imageUrl,
+        imageURL: imageUrl,
         imagePath: filePath,
       },
     };
@@ -133,7 +133,7 @@ router.post('/upload-product-image', upload.single('image'), async (req, res) =>
 
     res.status(200).send({
       message: 'Product image uploaded successfully',
-      imageUrl: imageUrl,
+      imageURL: imageUrl,
       imagePath: filePath,
     });
   } catch (error) {
