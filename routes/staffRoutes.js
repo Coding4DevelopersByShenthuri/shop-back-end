@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const staffService = require('../services/staffService');
 const multer = require('multer');
+const { ObjectId } = require('mongodb');
 
 
 // Configure Multer for file uploads
@@ -98,19 +99,16 @@ router.post('/upload-staff-image', upload.single('image'), async (req, res) => {
     // Create the desired imageUrl format
     const imageUrl = `${baseUrl}/uploads/${fileName}`;
 
-    // Create the desired imagePath format
-    const absoluteImagePath = path.resolve(filePath);
-
     // Update the staff document with image URL and path
     const updateDoc = {
       $set: {
         imageUrl: imageUrl,
-        imagePath: absoluteImagePath,
+        imagePath: filePath,
       },
     };
-    const filter = { _id: new ObjectId(staffId) };  // Using ObjectId
-    const result = await staffService.updateStaff(filter, updateDoc);
-
+    
+    const result = await staffService.updateStaff(staffId, updateDoc);
+console.log(result)
     if (result.matchedCount === 0) {
       return res.status(404).send({ error: 'Staff not found' });
     }
@@ -118,7 +116,7 @@ router.post('/upload-staff-image', upload.single('image'), async (req, res) => {
     res.status(200).send({
       message: 'Staff image uploaded successfully',
       imageUrl: imageUrl,
-      imagePath: absoluteImagePath,
+      imagePath: filePath,
     });
   } catch (error) {
     console.error("Error uploading staff image:", error);
