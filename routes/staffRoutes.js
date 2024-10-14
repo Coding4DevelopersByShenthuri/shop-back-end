@@ -8,10 +8,13 @@ router.post('/add-staff', async (req, res) => {
     const result = await staffService.addStaff(req.body);
     res.status(201).json(result);
   } catch (error) {
-    console.error("Error adding staff:", error);
+    if (error.message.includes('Email already exists')) {
+      return res.status(400).json({ error: error.message });
+    }
     res.status(500).json({ error: "Failed to add staff" });
   }
 });
+
 
 // Get all staffs
 router.get('/all-staffs', async (req, res) => {
