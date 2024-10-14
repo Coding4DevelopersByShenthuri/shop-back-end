@@ -66,4 +66,50 @@ router.get('/staff/:id', async (req, res) => {
   }
 });
 
+// Route for uploading staff image and storing image URL and path in MongoDB
+router.post('/upload-staff-image', upload.single('image'), async (req, res) => {
+  const staffId = req.body.staffId;  // Get the staff ID from the request
+
+
+  if (!ObjectId.isValid(staffId)) {
+    return res.status(400).send({ error: 'Invalid staff ID format' });
+  }
+
+  try {
+    // Extract the necessary details from the uploaded file
+    const filePath = req.file.path; // The path where the file is stored on the server
+    const fileName = req.file.filename; // The uploaded file's name
+    const baseUrl = `${req.protocol}://${req.get('host')}`; // Base URL of the server
+
+    // Create the desired imageUrl format
+    const imageUrl = `${baseUrl}/uploads/${fileName}`;
+
+    // Create the desired imagePath format
+    const absoluteImagePath = path.resolve(filePath);
+
+    // Update the staff document with image URL and path
+    const updateDoc = {
+      $set: {
+        imageUrl: imageUrl,
+        imagePath: absoluteImagePath,
+      },
+    };
+    const filter = { _id: new ObjectId(staffId) };  // Using ObjectId
+    const result = await staffService.updateStaff(filter, updateDoc);
+
+    if (result.matchedCount === 0) {
+      return res.status(404).send({ error: 'Staff not found' });
+    }
+
+    res.status(200).send({
+      message: 'Staff image uploaded successfully',
+      imageUrl: imageUrl,
+      imagePath: absoluteImagePath,
+    });
+  } catch (error) {
+    console.error("Error uploading staff image:", error);
+    res.status(500).send({ error: "Failed to upload staff image" });
+  }
+});
+
 module.exports = router;
