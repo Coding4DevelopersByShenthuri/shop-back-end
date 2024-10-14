@@ -97,7 +97,7 @@ router.post('/upload-staff-image', upload.single('image'), async (req, res) => {
     const baseUrl = `${req.protocol}://${req.get('host')}`; // Base URL of the server
 
     // Create the desired imageUrl format
-    const imageUrl = `${baseUrl}/uploads/${fileName}`;
+    const imageUrl = `/uploads/${fileName}`;
 
     // Update the staff document with image URL and path
     const updateDoc = {
