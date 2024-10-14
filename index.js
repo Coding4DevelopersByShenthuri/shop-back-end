@@ -6,6 +6,7 @@ const path = require('path');
 const staffRoutes = require('./routes/staffRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 const productRoutes = require('./routes/productRoutes');
+const stockRoutes = require('./routes/stockRoutes');
 // import other routes...
 
 const app = express();
@@ -24,6 +25,7 @@ connectDB().then(() => {
   app.use('/staff', staffRoutes);
   app.use('/tasks', taskRoutes);
   app.use('/product', productRoutes);
+  app.use('/stock', stockRoutes);
   // Add other route uses...
   
   // Start the server
