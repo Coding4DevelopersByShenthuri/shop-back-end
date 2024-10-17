@@ -1,15 +1,24 @@
 // routes/attendanceRoutes.js
-const express = require("express");
-const { markAttendance, getAttendanceByStaff, getAttendanceByDate } = require("../services/attendanceService");
+const express = require('express');
+const Attendance = require('../models/attendanceModel');
 const router = express.Router();
 
-// Mark attendance (POST request)
-router.post("/mark", markAttendance);
+router.post('/', async (req, res) => {
+  try {
+    const attendanceData = req.body; // Expecting an object like { staffId: "xxx", present: true/false }
 
-// Get attendance for a staff member
-router.get("/staff/:staffId", getAttendanceByStaff);
+    const attendanceEntries = Object.entries(attendanceData).map(([staffId, present]) => ({
+      staffId,
+      present,
+    }));
 
-// Get attendance for a specific date
-router.get("/date/:date", getAttendanceByDate);
+    await Attendance.insertMany(attendanceEntries); // Bulk insert if you are sending multiple records
+    res.status(201).json({ message: 'Attendance recorded successfully' });
+  } catch (error) {
+    console.error("Error saving attendance:", error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 module.exports = router;
+
