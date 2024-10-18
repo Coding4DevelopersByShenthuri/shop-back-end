@@ -21,10 +21,15 @@ const getTaskById = async (id) => {
   return await Task.findById(id);
 };
 
+const findTaskByStaffId = async (id) => {
+  return await Task.find({staffId:id});
+};
+
 module.exports = {
   addTask,
   getAllTasks,
   updateTask,
   deleteTask,
   getTaskById,
+  findTaskByStaffId
 };

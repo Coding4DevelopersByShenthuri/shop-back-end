@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const staffService = require('../services/staffService');
+const taskService = require('../services/taskService');
 const multer = require('multer');
 const { ObjectId } = require('mongodb');
 
@@ -38,6 +39,28 @@ router.get('/all-staffs', async (req, res) => {
     res.status(500).json({ error: "Failed to fetch staffs" });
   }
 });
+
+router.get('/all-staff-with-task', async (req, res) => {
+  try {
+    const staffs = await staffService.getAllStaffs();
+
+    // Assuming you have a taskService that fetches tasks by staffId
+    const tasksPromises = staffs.map(async (staff) => {
+      const tasks = await taskService.findTaskByStaffId(staff._id); // Adjust based on your staff ID property
+      return {
+        ...staff._doc,
+        tasks, // Include tasks in the staff object
+      };
+    });
+
+    const staffsWithTasks = await Promise.all(tasksPromises);
+    res.status(200).json(staffsWithTasks);
+  } catch (error) {
+    console.error("Error fetching staffs:", error);
+    res.status(500).json({ error: "Failed to fetch staffs" });
+  }
+});
+
 
 // Update staff
 router.patch('/staff/:id', async (req, res) => {
