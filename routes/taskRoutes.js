@@ -25,7 +25,7 @@ router.get('/all-tasks', async (req, res) => {
 });
 
 // Update task
-router.patch('/task/:id', async (req, res) => {
+router.put('/task/:id', async (req, res) => {
   try {
     const updatedTask = await taskService.updateTask(req.params.id, req.body);
     if (!updatedTask) {
