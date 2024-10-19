@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createUser, getUserDetails } = require('../services/userService');
+const { createUser, getUserDetails,findUserByUid,updateUserByUid } = require('../services/userService');
 const User = require('../models/userModel'); // Assuming you have a User model
 
 // Signup route
@@ -9,12 +9,23 @@ router.post('/createuser/:uid', async (req, res) => {
     const { email, birthday } = req.body;
 
     try {
-        const newUser = await createUser(uid, email, birthday);
-        res.status(201).json({ message: 'User created successfully', newUser });
+        // Check if the user already exists
+        const existingUser = await findUserByUid(uid); // Replace with your actual function to find the user
+        
+        if (existingUser) {
+            // If the user exists, update their information
+            const updatedUser = await updateUserByUid(uid, { email, birthday }); // Replace with your actual update function
+            return res.status(200).json({ message: 'User updated successfully', updatedUser });
+        } else {
+            // If the user does not exist, create a new one
+            const newUser = await createUser(uid, email, birthday); // Your existing createUser function
+            return res.status(201).json({ message: 'User created successfully', newUser });
+        }
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 });
+
 
 // Get user details route
 router.get('/userdetail/:uid', async (req, res) => {

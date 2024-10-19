@@ -12,6 +12,18 @@ const createUser = async (uid, email, birthday) => {
     }
 };
 
+const findUserByUid = async (uid) => {
+    try {
+        const user = await User.findOne({ uid }); // Find one user by UID
+        if (!user) {
+            return null; // User not found
+        }
+        return user; // Return user details
+    } catch (error) {
+        throw new Error('Error finding user by UID: ' + error.message);
+    }
+};
+
 const getUserDetails = async (uid) => {
     try {
         // Find user by UID
@@ -25,7 +37,26 @@ const getUserDetails = async (uid) => {
     }
 };
 
+// Update user by UID
+const updateUserByUid = async (uid, updates) => {
+    try {
+        const updatedUser = await User.findOneAndUpdate(
+            { uid },
+            { $set: updates }, // Use $set to update specific fields
+            { new: true } // Return the updated document
+        );
+        if (!updatedUser) {
+            return null; // User not found
+        }
+        return updatedUser; // Return updated user details
+    } catch (error) {
+        throw new Error('Error updating user: ' + error.message);
+    }
+};
+
 module.exports = {
     createUser,
-    getUserDetails
+    getUserDetails,
+    findUserByUid,
+    updateUserByUid
 };
