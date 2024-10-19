@@ -5,14 +5,20 @@ const PDFDocument = require('pdfkit');
 const Attendance = require('../models/attendanceModel'); // Ensure this is the correct path
 const attendanceController = require('../controllers/attendanceController');
 
-let dailyToken = ""; // Assume you have some way of generating and storing a daily token
-
 // Function to generate attendance PDF
-const generateAttendancePDF = (attendanceList) => {
+const generateAttendancePDF = (attendanceList, selectedDate) => {
   const doc = new PDFDocument();
 
   // Title
   doc.fontSize(20).text('Staff Attendance Report', { align: 'center' });
+
+  // Attendance date (selected by the user)
+  doc.moveDown();
+  doc.fontSize(12).text(`Attendance Date: ${selectedDate}`, { align: 'left' });
+
+  // Report generation date (current date)
+  const reportDate = new Date().toLocaleDateString();
+  doc.fontSize(12).text(`Report Generated on: ${reportDate}`, { align: 'left' });
 
   // Present staff
   doc.moveDown();
@@ -31,7 +37,7 @@ const generateAttendancePDF = (attendanceList) => {
   return doc; // Return the PDF document object
 };
 
-// Route to mark attendance
+// Route to mark attendance and generate a PDF
 router.get('/mark-attendance', async (req, res) => {
   const { staffId, token } = req.query;
 
@@ -47,7 +53,8 @@ router.get('/mark-attendance', async (req, res) => {
 
       // Generate the PDF with the updated attendance list
       const attendanceList = [attendanceEntry]; // Replace with actual list if you maintain it elsewhere
-      const doc = generateAttendancePDF(attendanceList);
+      const selectedDate = new Date().toLocaleDateString(); // Set the selected date to today's date
+      const doc = generateAttendancePDF(attendanceList, selectedDate);
 
       // Create a path to save the PDF file
       const pdfFilePath = './attendance/attendance_report.pdf';
@@ -80,7 +87,7 @@ router.get('/mark-attendance', async (req, res) => {
 // Route for saving attendance data and generating a PDF report
 router.post('/', async (req, res) => {
   try {
-    const attendanceEntries = req.body; // Expecting an array of { staffId, name, present }
+    const { attendanceEntries, selectedDate } = req.body; // Expecting an array of { staffId, name, present }
 
     // Validate that each entry contains a valid ObjectId and a boolean for 'present'
     attendanceEntries.forEach((entry) => {
@@ -96,7 +103,7 @@ router.post('/', async (req, res) => {
     await Attendance.insertMany(attendanceEntries);
 
     // Generate the PDF with present and absent staff
-    const doc = generateAttendancePDF(attendanceEntries);
+    const doc = generateAttendancePDF(attendanceEntries, selectedDate); // Pass the selected date
 
     // Create a path to save the PDF file
     const pdfFilePath = './attendance/attendance_report.pdf';
