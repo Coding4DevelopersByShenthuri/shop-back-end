@@ -2,13 +2,11 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const PDFDocument = require('pdfkit');
+const { PDFDocument: PDFLibDocument } = require('pdf-lib'); // Importing pdf-lib
 const Attendance = require('../models/attendanceModel'); // Ensure this is the correct path
-const attendanceController = require('../controllers/attendanceController');
 
 // Function to generate attendance PDF
-const generateAttendancePDF = (attendanceList, selectedDate) => {
-  const doc = new PDFDocument();
-
+const generateAttendancePDF = async (attendanceList, selectedDate, reportDate, doc) => {
   // Title
   doc.fontSize(20).text('Staff Attendance Report', { align: 'center' });
 
@@ -17,7 +15,6 @@ const generateAttendancePDF = (attendanceList, selectedDate) => {
   doc.fontSize(12).text(`Attendance Date: ${selectedDate}`, { align: 'left' });
 
   // Report generation date (current date)
-  const reportDate = new Date().toLocaleDateString();
   doc.fontSize(12).text(`Report Generated on: ${reportDate}`, { align: 'left' });
 
   // Present staff
@@ -34,10 +31,10 @@ const generateAttendancePDF = (attendanceList, selectedDate) => {
     .filter(staff => !staff.present)
     .forEach(staff => doc.fontSize(12).text(staff.name));
 
-  return doc; // Return the PDF document object
+  return doc; // Return the updated PDF document object
 };
 
-// Route to mark attendance and generate a PDF
+// Route for marking attendance and generating a PDF
 router.get('/mark-attendance', async (req, res) => {
   const { staffId, token } = req.query;
 
@@ -52,22 +49,50 @@ router.get('/mark-attendance', async (req, res) => {
       );
 
       // Generate the PDF with the updated attendance list
-      const attendanceList = [attendanceEntry]; // Replace with actual list if you maintain it elsewhere
       const selectedDate = new Date().toLocaleDateString(); // Set the selected date to today's date
-      const doc = generateAttendancePDF(attendanceList, selectedDate);
+      const reportDate = new Date().toLocaleDateString(); // Set report date to today's date
+      const formattedDate = new Date().toISOString().split('T')[0]; // Format to YYYY-MM-DD
+      const pdfFilePath = `./attendance/attendance_report_${formattedDate}.pdf`; // Unique PDF file per date
 
-      // Create a path to save the PDF file
-      const pdfFilePath = './attendance/attendance_report.pdf';
-      const writeStream = fs.createWriteStream(pdfFilePath);
+      let doc = new PDFDocument(); // Create a new PDF document
+      
+      // Check if the PDF already exists
+      if (fs.existsSync(pdfFilePath)) {
+        // Read the existing PDF
+        const existingPdfBytes = fs.readFileSync(pdfFilePath);
+        const existingPdfDoc = await PDFLibDocument.load(existingPdfBytes);
+
+        // Create a new PDF document to hold the merged content
+        const newPdfDoc = await PDFLibDocument.create();
+        const copiedPages = await newPdfDoc.copyPages(existingPdfDoc, existingPdfDoc.getPageIndices());
+
+        // Add copied pages to the new PDF document
+        copiedPages.forEach((page) => {
+          newPdfDoc.addPage(page);
+        });
+
+        // Now generate the new attendance PDF
+        await generateAttendancePDF([attendanceEntry], selectedDate, reportDate, doc);
+
+        // Pipe the new document to a writable stream
+        const writeStream = fs.createWriteStream(pdfFilePath);
+        doc.pipe(writeStream);
+        doc.end();
+        
+      } else {
+        // If PDF does not exist, create a new one
+        await generateAttendancePDF([attendanceEntry], selectedDate, reportDate, doc);
+      }
 
       // Pipe the PDF to the write stream
+      const writeStream = fs.createWriteStream(pdfFilePath);
       doc.pipe(writeStream);
 
       // Finalize the PDF and close the stream
       doc.end();
 
       writeStream.on('finish', () => {
-        res.status(201).json({ message: 'Attendance recorded successfully, and PDF generated' });
+        res.status(201).json({ message: 'Attendance recorded successfully, and PDF generated/updated' });
       });
 
       writeStream.on('error', (err) => {
@@ -102,21 +127,43 @@ router.post('/', async (req, res) => {
     // Save the attendance data to the database
     await Attendance.insertMany(attendanceEntries);
 
-    // Generate the PDF with present and absent staff
-    const doc = generateAttendancePDF(attendanceEntries, selectedDate); // Pass the selected date
+    // Set file path based on the selected date
+    const formattedDate = new Date(selectedDate).toISOString().split('T')[0]; // Format the date to YYYY-MM-DD
+    const pdfFilePath = `./attendance/attendance_report_${formattedDate}.pdf`; // Unique PDF file per date
 
-    // Create a path to save the PDF file
-    const pdfFilePath = './attendance/attendance_report.pdf';
-    const writeStream = fs.createWriteStream(pdfFilePath);
+    let doc = new PDFDocument(); // Create a new PDF document
+
+    // Check if the PDF already exists
+    if (fs.existsSync(pdfFilePath)) {
+      // Read the existing PDF
+      const existingPdfBytes = fs.readFileSync(pdfFilePath);
+      const existingPdfDoc = await PDFLibDocument.load(existingPdfBytes);
+
+      // Create a new PDF document to hold the merged content
+      const newPdfDoc = await PDFLibDocument.create();
+      const copiedPages = await newPdfDoc.copyPages(existingPdfDoc, existingPdfDoc.getPageIndices());
+
+      // Add copied pages to the new PDF document
+      copiedPages.forEach((page) => {
+        newPdfDoc.addPage(page);
+      });
+
+      // Generate the PDF with the merged attendance
+      await generateAttendancePDF(attendanceEntries, selectedDate, new Date().toLocaleDateString(), doc);
+    } else {
+      // If PDF does not exist, create a new one
+      await generateAttendancePDF(attendanceEntries, selectedDate, new Date().toLocaleDateString(), doc);
+    }
 
     // Pipe the PDF to the write stream
+    const writeStream = fs.createWriteStream(pdfFilePath);
     doc.pipe(writeStream);
 
     // Finalize the PDF and close the stream
     doc.end();
 
     writeStream.on('finish', () => {
-      res.status(201).json({ message: 'Attendance recorded successfully, and PDF generated' });
+      res.status(201).json({ message: 'Attendance recorded successfully, and PDF generated/updated' });
     });
 
     writeStream.on('error', (err) => {
