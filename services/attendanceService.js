@@ -1,8 +1,22 @@
 // services/attendanceService.js
 const Attendance = require("../models/attendanceModel");
 
-// Mark attendance
-const markAttendance = async (req, res) => {
+// Function to mark attendance with staff ID and token validation
+const markAttendance = async (staffId, token) => {
+  // Add your token validation logic here if necessary
+  // For example: if (!isValidToken(token)) throw new Error('Invalid token');
+
+  const attendanceRecord = await Attendance.findOneAndUpdate(
+    { staffId: staffId },
+    { present: true, date: new Date() },
+    { new: true, upsert: true }
+  );
+
+  return attendanceRecord;
+};
+
+// Mark attendance API handler
+const markAttendanceHandler = async (req, res) => {
   const { staffId, status, checkInTime, checkOutTime } = req.body;
 
   try {
@@ -44,4 +58,9 @@ const getAttendanceByDate = async (req, res) => {
   }
 };
 
-module.exports = { markAttendance, getAttendanceByStaff, getAttendanceByDate };
+module.exports = { 
+  markAttendance, 
+  markAttendanceHandler, 
+  getAttendanceByStaff, 
+  getAttendanceByDate 
+};
