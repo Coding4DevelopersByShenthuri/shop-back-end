@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { createUser, getUserDetails } = require('../services/userService');
+const User = require('../models/userModel'); // Assuming you have a User model
 
 // Signup route
 router.post('/createuser/:uid', async (req, res) => {
@@ -27,6 +28,23 @@ router.get('/userdetail/:uid', async (req, res) => {
         res.status(200).json({ message: 'User details fetched successfully', userDetails });
     } catch (error) {
         res.status(500).json({ message: error.message });
+    }
+});
+
+// Get upcoming birthdays route
+router.get('/upcoming-birthdays', async (req, res) => {
+    try {
+        const today = new Date();
+        const nextWeek = new Date(today);
+        nextWeek.setDate(today.getDate() + 7);
+
+        const upcomingBirthdays = await User.find({
+            birthday: { $gte: today, $lte: nextWeek },
+        });
+
+        res.status(200).json(upcomingBirthdays);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch upcoming birthdays' });
     }
 });
 
