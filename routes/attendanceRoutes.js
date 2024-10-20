@@ -36,11 +36,11 @@ const generateAttendancePDF = async (attendanceList, selectedDate, reportDate, d
 };
 
 // Route for marking attendance and generating a PDF
-router.get('/mark-attendance', async (req, res) => {
-  const { staffId, token } = req.query;
+router.post('/mark-attendance', async (req, res) => {
+  const { staffId } = req.body;
 
   // Validate token here if needed
-  if (token === dailyToken) {
+  if (staffId) {
     try {
       // Mark the staff as present in the database
       const attendanceEntry = await Attendance.findOneAndUpdate(
@@ -93,20 +93,23 @@ router.get('/mark-attendance', async (req, res) => {
       doc.end();
 
       writeStream.on('finish', () => {
-        res.status(201).json({ message: 'Attendance recorded successfully, and PDF generated/updated' });
+        res.status(201).json({ 
+          message: 'Attendance recorded successfully, and PDF generated/updated',
+          data: attendanceEntry
+        });
       });
 
       writeStream.on('error', (err) => {
-        console.error('Error writing PDF:', err);
+        console.log('Error writing PDF:', err);
         res.status(500).json({ message: 'Error generating PDF' });
       });
 
     } catch (error) {
-      console.error("Error marking attendance:", error);
+      console.log("Error marking attendance:", error);
       res.status(500).json({ message: 'Error marking attendance' });
     }
   } else {
-    res.status(403).json({ message: 'Invalid token' });
+    res.status(403).json({ message: 'Invalid staffId' });
   }
 });
 

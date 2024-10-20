@@ -30,7 +30,7 @@ connectDB().then(() => {
   app.use('/product', productRoutes);
   app.use('/stock', stockRoutes);
   app.use('/user', userRoutes);
-  app.use("/attendance", attendanceRoutes);
+  app.use('/attendance', attendanceRoutes);
   app.use("/contact", contactRoutes);
   // Add other route uses...
   
