@@ -9,6 +9,7 @@ const productRoutes = require('./routes/productRoutes');
 const stockRoutes = require('./routes/stockRoutes');
 const userRoutes = require('./routes/userRoutes');
 const attendanceRoutes = require("./routes/attendanceRoutes");
+const contactRoutes = require('./routes/contactRoutes');
 // import other routes...
 
 const app = express();
@@ -30,6 +31,7 @@ connectDB().then(() => {
   app.use('/stock', stockRoutes);
   app.use('/user', userRoutes);
   app.use("/attendance", attendanceRoutes);
+  app.use("/contact", contactRoutes);
   // Add other route uses...
   
   // Start the server
