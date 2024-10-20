@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const PDFDocument = require('pdfkit');
+const attendanceController = require('../controllers/attendanceController');
 const { PDFDocument: PDFLibDocument } = require('pdf-lib'); // Importing pdf-lib
 const Attendance = require('../models/attendanceModel'); // Ensure this is the correct path
 
