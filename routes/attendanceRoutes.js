@@ -5,6 +5,11 @@ const PDFDocument = require('pdfkit');
 const attendanceController = require('../controllers/attendanceController');
 const { PDFDocument: PDFLibDocument } = require('pdf-lib'); // Importing pdf-lib
 const Attendance = require('../models/attendanceModel'); // Ensure this is the correct path
+const Staff = require('../models/staffModel');
+const staffService = require('../services/staffService');
+const path = require('path');
+
+
 
 // Function to generate attendance PDF
 const generateAttendancePDF = async (attendanceList, selectedDate, reportDate, doc) => {
@@ -35,74 +40,101 @@ const generateAttendancePDF = async (attendanceList, selectedDate, reportDate, d
   return doc; // Return the updated PDF document object
 };
 
-// Route for marking attendance and generating a PDF
 router.post('/mark-attendance', async (req, res) => {
   const { staffId } = req.body;
 
-  // Validate token here if needed
+  const selectedDate = new Date().toLocaleDateString();
+  const istDate = new Date(selectedDate).toLocaleString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+
+  const [day, month, year] = istDate.split(',')[0].split('/');
+  const formattedDate = `${year}-${month}-${day}`;
+  const pdfFilePath = `./attendance/attendance_report_${formattedDate}.pdf`; // Unique PDF file per date
+
   if (staffId) {
     try {
-      // Mark the staff as present in the database
-      const attendanceEntry = await Attendance.findOneAndUpdate(
-        { staffId: staffId }, // Find attendance by staff ID
-        { present: true, date: new Date() }, // Update attendance status
-        { new: true, upsert: true } // Create new record if not found
-      );
-
-      // Generate the PDF with the updated attendance list
-      const selectedDate = new Date().toLocaleDateString(); // Set the selected date to today's date
-      const reportDate = new Date().toLocaleDateString(); // Set report date to today's date
-      const formattedDate = new Date().toISOString().split('T')[0]; // Format to YYYY-MM-DD
-      const pdfFilePath = `./attendance/attendance_report_${formattedDate}.pdf`; // Unique PDF file per date
-
-      let doc = new PDFDocument(); // Create a new PDF document
-      
-      // Check if the PDF already exists
-      if (fs.existsSync(pdfFilePath)) {
-        // Read the existing PDF
-        const existingPdfBytes = fs.readFileSync(pdfFilePath);
-        const existingPdfDoc = await PDFLibDocument.load(existingPdfBytes);
-
-        // Create a new PDF document to hold the merged content
-        const newPdfDoc = await PDFLibDocument.create();
-        const copiedPages = await newPdfDoc.copyPages(existingPdfDoc, existingPdfDoc.getPageIndices());
-
-        // Add copied pages to the new PDF document
-        copiedPages.forEach((page) => {
-          newPdfDoc.addPage(page);
-        });
-
-        // Now generate the new attendance PDF
-        await generateAttendancePDF([attendanceEntry], selectedDate, reportDate, doc);
-
-        // Pipe the new document to a writable stream
-        const writeStream = fs.createWriteStream(pdfFilePath);
-        doc.pipe(writeStream);
-        doc.end();
-        
-      } else {
-        // If PDF does not exist, create a new one
-        await generateAttendancePDF([attendanceEntry], selectedDate, reportDate, doc);
+      // Find staff details using staffId
+      const staffObj = await Staff.findById(staffId);
+      if (!staffObj) {
+        return res.status(404).json({ message: 'Staff not found' });
       }
 
-      // Pipe the PDF to the write stream
-      const writeStream = fs.createWriteStream(pdfFilePath);
-      doc.pipe(writeStream);
 
-      // Finalize the PDF and close the stream
-      doc.end();
+      // Mark the staff as present in the attendance collection
+      await Attendance.findOneAndUpdate(
+        { staffId: staffId },
+        { present: true, date: formattedDate },
+        { new: true, upsert: true }
+      );
 
-      writeStream.on('finish', () => {
-        res.status(201).json({ 
-          message: 'Attendance recorded successfully, and PDF generated/updated',
-          data: attendanceEntry
+      try {
+        const allEntriesForDate = await Staff.aggregate([
+          {
+            $lookup: {
+              from: 'attendances', // Name of the Attendant collection
+              localField: '_id', // The field from the Staff model (usually _id)
+              foreignField: 'staffId', // The field from the Attendant model
+              as: 'attendances' // Alias for the array that will contain the joined data
+            }
+          },
+          {
+            $project: {
+              _id: 1, // Include staffId
+              name: 1, // Include staff name (assuming there's a 'name' field)
+              attendances: {
+                $filter: {
+                  input: "$attendances", // The array to filter
+                  as: "attendance", // Variable name for each element in the array
+                  cond: {
+                    $eq: [
+                      { $dateToString: { format: "%Y-%m-%d", date: "$$attendance.date" } }, // Convert attendance date to string format (YYYY-MM-DD)
+                      { $dateToString: { format: "%Y-%m-%d", date: new Date() } } // Convert formattedDate to string format (YYYY-MM-DD)
+                    ]
+                  } // Filter condition
+                }
+              } // Keep the filtered attendances for the specified date
+            }
+          }
+        ]);
+        const attendanceEntries = allEntriesForDate.map(item => {
+          return {
+            date: formattedDate,
+            staffId: item._id,
+            name: item.name,
+            present: item?.attendances[0]?.present || false
+          }
+        }
+        )
+
+        let doc = new PDFDocument(); // Create a new PDF document
+        await generateAttendancePDF(attendanceEntries, formattedDate, new Date().toLocaleDateString(), doc);
+
+        const writeStream = fs.createWriteStream(pdfFilePath);
+        doc.pipe(writeStream);
+
+        writeStream.on('finish', () => {
+          res.status(201).json({
+            message: 'Attendance recorded successfully, and PDF generated/updated1',
+            data: attendanceEntries.find(e => e.staffId == staffId)
+          });
         });
-      });
 
-      writeStream.on('error', (err) => {
-        console.log('Error writing PDF:', err);
-        res.status(500).json({ message: 'Error generating PDF' });
-      });
+        writeStream.on('error', (err) => {
+          console.log('Error writing PDF:', err);
+          res.status(500).json({ message: 'Error generating PDF' });
+        });
+
+        // Finalize the PDF document
+        doc.end();
+        // Handle the results as needed
+      } catch (error) {
+        console.log(error);
+        // You can also handle the error further, like returning an error response in an Express app
+      }
 
     } catch (error) {
       console.log("Error marking attendance:", error);
@@ -112,6 +144,8 @@ router.post('/mark-attendance', async (req, res) => {
     res.status(403).json({ message: 'Invalid staffId' });
   }
 });
+
+
 
 // Route for saving attendance data and generating a PDF report
 router.post('/', async (req, res) => {
