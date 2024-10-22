@@ -6,7 +6,7 @@ const User = require('../models/userModel'); // Assuming you have a User model
 // Signup route
 router.post('/createuser/:uid', async (req, res) => {
     const { uid } = req.params;
-    const { email, birthday } = req.body;
+    const { email, birthday, name } = req.body;
 
     try {
         // Check if the user already exists
@@ -14,11 +14,11 @@ router.post('/createuser/:uid', async (req, res) => {
         
         if (existingUser) {
             // If the user exists, update their information
-            const updatedUser = await updateUserByUid(uid, { email, birthday }); // Replace with your actual update function
+            const updatedUser = await updateUserByUid(uid, { email, birthday , name}); // Replace with your actual update function
             return res.status(200).json({ message: 'User updated successfully', updatedUser });
         } else {
             // If the user does not exist, create a new one
-            const newUser = await createUser(uid, email, birthday); // Your existing createUser function
+            const newUser = await createUser(uid, email, birthday, name); // Your existing createUser function
             return res.status(201).json({ message: 'User created successfully', newUser });
         }
     } catch (error) {

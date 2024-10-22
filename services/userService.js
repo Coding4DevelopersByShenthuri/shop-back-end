@@ -1,9 +1,9 @@
 const User = require('../models/userModel'); // Import the user schema
 
-const createUser = async (uid, email, birthday) => {
+const createUser = async (uid, email, birthday , name) => {
     try {
         // Create new user instance
-        const newUser = new User({ uid, email, birthday });
+        const newUser = new User({ uid, email, birthday , name });
         // Save the user to the database
         const savedUser = await newUser.save();
         return savedUser;
