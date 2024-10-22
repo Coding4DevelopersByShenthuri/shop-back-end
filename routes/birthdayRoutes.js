@@ -45,9 +45,9 @@ router.post('/send-wish', async (req, res) => {
       <p style="font-size: 18px;">We hope you have a fantastic day filled with joy, love, and laughter!</p>
       <p>${message}</p>
       <div style="margin-top: 20px;">
-        <img src="https://example.com/birthday-cake.jpg" alt="Birthday Cake" style="width: 200px;"/>
+        <img src="https://handletheheat.com/wp-content/uploads/2015/03/Best-Birthday-Cake-with-milk-chocolate-buttercream-SQUARE.jpg" alt="Birthday Cake" style="width: 200px;"/>
       </div>
-      <p style="font-size: 16px; color: #555;">Best wishes, <br/> The Birthday Wishes Team</p>
+      <p style="font-size: 16px; color: #555;">Best wishes, <br/> By: Team Shenthu MART</p>
     </div>
   `;
 
