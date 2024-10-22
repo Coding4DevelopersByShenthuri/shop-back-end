@@ -13,11 +13,16 @@ router.get('/upcoming-birthdays', async (req, res) => {
     const futureDate = new Date();
     futureDate.setDate(currentDate.getDate() + 7); // Look for birthdays within the next 7 days
 
-    // Find users whose birthdays are between current date and the next 7 days
+    // Format the current and future dates to "yyyy-mm-dd" strings
+    const currentDateString = currentDate.toISOString().split('T')[0];
+    const futureDateString = futureDate.toISOString().split('T')[0];
+
+    // Find users whose birthdays are between current date and the next 7 days, ignoring empty strings
     const upcomingBirthdays = await User.find({
       birthday: {
-        $gte: currentDate,
-        $lte: futureDate
+        $gte: currentDateString,
+        $lte: futureDateString,
+        $ne: '' // Exclude empty strings
       }
     });
 
@@ -27,10 +32,24 @@ router.get('/upcoming-birthdays', async (req, res) => {
   }
 });
 
+
 // Route to send birthday wish via email
 router.post('/send-wish', async (req, res) => {
-  const { email, message } = req.body;
-  const subject = 'Birthday Wishes';
+  const { email, message, name } = req.body;
+  const subject = '🎉 Happy Birthday Wishes! 🎉';
+  
+  // Basic birthday template with dynamic content
+  const htmlTemplate = `
+    <div style="font-family: Arial, sans-serif; color: #333; text-align: center; padding: 20px;">
+      <h1 style="color: #4CAF50;">🎂 Happy Birthday, ${name}! 🎂</h1>
+      <p style="font-size: 18px;">We hope you have a fantastic day filled with joy, love, and laughter!</p>
+      <p>${message}</p>
+      <div style="margin-top: 20px;">
+        <img src="https://example.com/birthday-cake.jpg" alt="Birthday Cake" style="width: 200px;"/>
+      </div>
+      <p style="font-size: 16px; color: #555;">Best wishes, <br/> The Birthday Wishes Team</p>
+    </div>
+  `;
 
   try {
     const request = mailjet
@@ -45,11 +64,11 @@ router.post('/send-wish', async (req, res) => {
             To: [
               {
                 Email: email,
-                Name: email
+                Name: name
               }
             ],
             Subject: subject,
-            HTMLPart: message
+            HTMLPart: htmlTemplate
           }
         ]
       });
@@ -68,5 +87,6 @@ router.post('/send-wish', async (req, res) => {
     });
   }
 });
+
 
 module.exports = router;
