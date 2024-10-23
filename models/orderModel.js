@@ -18,7 +18,7 @@ const orderDetailSchema = new Schema({
 // Define the order schema
 const orderSchema = new Schema({
   orderNumber: { type: Number, unique: true },  // Unique order number
-  staffId: { type: String, required: true },    // Reference to the staff
+  userId: { type: String, required: true },    // Reference to the staff
   orderDetail: [orderDetailSchema],             // Array of order detail objects
 }, { timestamps: true });
 
@@ -33,6 +33,5 @@ orderSchema.pre('save', async function(next) {
 });
 
 // Create the model
-const Order = mongoose.model('Order', orderSchema, 'orders'); // Order model
-
-module.exports = { Order };
+const Order = mongoose.model('Order', orderSchema, 'order'); // Order model
+module.exports = Order;
