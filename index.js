@@ -12,7 +12,8 @@ const stockRoutes = require('./routes/stockRoutes');
 const userRoutes = require('./routes/userRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const contactRoutes = require('./routes/contactRoutes');
-const birthdayRoutes = require('./routes/birthdayRoutes'); 
+const birthdayRoutes = require('./routes/birthdayRoutes');
+const orderRoutes = require('./routes/orderRoutes'); 
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -36,6 +37,7 @@ connectDB().then(() => {
   app.use('/attendance', attendanceRoutes);
   app.use('/contact', contactRoutes);
   app.use('/birthday', birthdayRoutes);
+  app.use('/order', orderRoutes);
   
   // New birthday route for fetching upcoming birthdays
   app.use('/upcoming-birthdays', birthdayRoutes); 
