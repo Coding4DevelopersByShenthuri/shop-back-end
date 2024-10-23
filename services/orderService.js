@@ -6,5 +6,5 @@ const addOrder = async (data) => {
 };
 
 module.exports = {
-  aaddOrder
+  addOrder
 };

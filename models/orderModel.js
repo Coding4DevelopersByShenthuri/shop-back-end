@@ -3,16 +3,23 @@ const Schema = mongoose.Schema;
 
 // Define the order detail schema
 const orderDetailSchema = new Schema({
-  productId: { type: String, required: true }, // ID of the product
-  quantity: { type: Number, required: true },  // Quantity of the product
-  price: { type: Number, required: true }       // Price of the product
+  category: { type: String, required: true },  // Category of the product
+  id: { type: String, required: true },        // Product ID
+  imageURL: { type: String },                  // Image URL of the product
+  name: { type: String, required: true },      // Name of the product
+  origin: { type: String },                    // Origin of the product
+  price: { type: Number, required: true },     // Price of the product
+  quantity: { type: Number, required: true },  // Quantity ordered
+  stock_quantity: { type: Number },            // Stock available
+  unit: { type: String },                      // Unit of measurement (e.g., "Roll")
+  _id: { type: String, required: true }        // Product unique identifier
 });
 
 // Define the order schema
 const orderSchema = new Schema({
-  orderNumber: { type: Number, unique: true }, // Unique order number
-  staffId: { type: String, required: true }, // Reference to the staff
-  orderDetail: [orderDetailSchema], // Array of order detail objects
+  orderNumber: { type: Number, unique: true },  // Unique order number
+  staffId: { type: String, required: true },    // Reference to the staff
+  orderDetail: [orderDetailSchema],             // Array of order detail objects
 }, { timestamps: true });
 
 // Pre-save hook to auto-generate orderNumber
