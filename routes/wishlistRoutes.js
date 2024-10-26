@@ -27,9 +27,9 @@ router.post('/add-list', async (req, res) => {
 });
 
 // Remove a specific product from the wishlist for the authenticated user
-router.delete('/:productId', authMiddleware, async (req, res) => {
-    const { productId } = req.params; // Get product ID from the URL parameters
-    const userId = req.user.id; // Get user ID from the authenticated user
+router.delete('/:productId', async (req, res) => {
+    const { productId } = req.params;
+    const { userId } = req.body; // Access userId from the request body
 
     try {
         const message = await wishlistService.removeProductFromWishlist(userId, productId);
