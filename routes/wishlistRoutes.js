@@ -5,10 +5,10 @@ const wishlistController = require('../controllers/wishlistController');
 const wishlistService = require('../services/wishlistService');
 
 // Fetch wishlist items for the authenticated user
-router.get('/get-list', authMiddleware, async (req, res) => {
+router.get('/get-list/:uid', async (req, res) => {
+    const { uid } = req.params;
     try {
-        const userId = req.user.id; // Assuming user ID is set in the request by the auth middleware
-        const wishlistItems = await wishlistService.getWishlistItems(userId);
+        const wishlistItems = await wishlistService.getWishlistItems(uid);
         res.status(200).json(wishlistItems);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -16,10 +16,8 @@ router.get('/get-list', authMiddleware, async (req, res) => {
 });
 
 // Add a product to the wishlist for the authenticated user
-router.post('/add-list', authMiddleware, async (req, res) => {
-    const { productId } = req.body; // Expecting product ID in the request body
-    const userId = req.user.id; // Get user ID from the authenticated user
-
+router.post('/add-list', async (req, res) => {
+    const { productId, userId } = req.body; // Expecting product ID in the request body
     try {
         const message = await wishlistService.addProductToWishlist(userId, productId);
         res.status(201).json(message);
