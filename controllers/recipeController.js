@@ -12,8 +12,8 @@ const getAllRecipes = async (req, res) => {
 
 // Create a new recipe
 const createRecipe = async (req, res) => {
-  const { title, description, ingredients, steps, imageUrl } = req.body;
-  const recipe = new Recipe({ title, description, ingredients, steps, imageUrl });
+  const { title, description, ingredients, steps, imageUrl, category } = req.body;
+  const recipe = new Recipe({ title, description, ingredients, steps, imageUrl, category });
 
   try {
     const savedRecipe = await recipe.save();
@@ -26,12 +26,12 @@ const createRecipe = async (req, res) => {
 // Update a recipe
 const updateRecipe = async (req, res) => {
   const { id } = req.params;
-  const { title, description, ingredients, steps, imageUrl } = req.body;
+  const { title, description, ingredients, steps, imageUrl, category } = req.body;
 
   try {
     const updatedRecipe = await Recipe.findByIdAndUpdate(
       id,
-      { title, description, ingredients, steps, imageUrl },
+      { title, description, ingredients, steps, imageUrl, category },
       { new: true, runValidators: true }
     );
     res.json(updatedRecipe);
