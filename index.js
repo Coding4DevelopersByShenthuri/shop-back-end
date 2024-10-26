@@ -16,6 +16,7 @@ const birthdayRoutes = require('./routes/birthdayRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const recipeRoutes = require('./routes/recipeRoutes');
 const wishlistRoutes = require('./routes/wishlistRoutes');
+const blogRoutes = require('./routes/blogRoutes');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -42,6 +43,7 @@ connectDB().then(() => {
   app.use('/order', orderRoutes);
   app.use('/recipes', recipeRoutes);
   app.use('/wishlists', wishlistRoutes);
+  app.use('/blogs', blogRoutes);
   
   // New birthday route for fetching upcoming birthdays
   app.use('/upcoming-birthdays', birthdayRoutes); 
