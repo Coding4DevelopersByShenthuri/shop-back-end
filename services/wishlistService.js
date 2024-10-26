@@ -4,7 +4,7 @@ const Product = require('../models/productModel'); // Assuming you have a Produc
 // Fetch all wishlist items for a user
 const getWishlistItems = async (userId) => {
     try {
-        const wishlistItems = await Wishlist.find({ user: userId }).populate('products'); // Populate to get product details
+        const wishlistItems = await Wishlist.find({ userId: userId }).populate('items'); // Populate to get product details
         return wishlistItems;
     } catch (error) {
         throw new Error('Error fetching wishlist items');
@@ -14,35 +14,42 @@ const getWishlistItems = async (userId) => {
 // Add a product to the wishlist
 const addProductToWishlist = async (userId, productId) => {
     try {
-        // Check if the product already exists in the user's wishlist
-        const existingWishlist = await Wishlist.findOne({ user: userId });
-        if (existingWishlist) {
-            // If it exists, add the product ID to the wishlist
-            if (!existingWishlist.products.includes(productId)) {
-                existingWishlist.products.push(productId);
-                await existingWishlist.save();
+        // Find the wishlist for the user
+        const wishlist = await Wishlist.findOne({ userId });
+
+        if (wishlist) {
+            // Check if the product already exists in the user's wishlist
+            if (wishlist.items.includes(productId)) {
+                return { message: 'Product already in wishlist' };
+            } else {
+                // Add the product ID to the wishlist if it doesn't exist
+                wishlist.items.push(productId);
+                await wishlist.save();
+                return { message: 'Product added to wishlist' };
             }
         } else {
-            // If not, create a new wishlist entry
+            // If no wishlist exists, create a new one with the product ID
             const newWishlist = new Wishlist({
-                user: userId,
-                products: [productId],
+                userId,
+                items: [productId],
             });
             await newWishlist.save();
+            return { message: 'Product added to wishlist' };
         }
-        return { message: 'Product added to wishlist' };
     } catch (error) {
+        console.error(error);
         throw new Error('Error adding product to wishlist');
     }
 };
 
+
 // Remove a product from the wishlist
 const removeProductFromWishlist = async (userId, productId) => {
     try {
-        const wishlist = await Wishlist.findOne({ user: userId });
+        const wishlist = await Wishlist.findOne({ userId: userId });
         if (wishlist) {
             // Remove the product ID from the wishlist
-            wishlist.products = wishlist.products.filter((id) => id.toString() !== productId);
+            wishlist.items = wishlist.items.filter((id) => id.toString() !== productId);
             await wishlist.save();
             return { message: 'Product removed from wishlist' };
         }
