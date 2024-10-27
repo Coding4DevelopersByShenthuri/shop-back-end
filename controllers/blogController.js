@@ -12,11 +12,11 @@ const getAllBlogs = async (req, res) => {
 
 // Create a new Blog
 const createBlog = async (req, res) => {
-  const { title, content,  imageUrl, category } = req.body;
-  const Blog = new Blog({ title, content,  imageUrl, category });
+  const { title, content, imageUrl, category, tags } = req.body;
+  const newBlog = new Blog({ title, content, imageUrl, category, tags }); // Renamed variable
 
   try {
-    const savedBlog = await Blog.save();
+    const savedBlog = await newBlog.save();
     res.status(201).json(savedBlog);
   } catch (error) {
     res.status(400).json({ message: 'Error creating Blog', error });
@@ -26,12 +26,12 @@ const createBlog = async (req, res) => {
 // Update a Blog
 const updateBlog = async (req, res) => {
   const { id } = req.params;
-  const { title, content,  imageUrl, category } = req.body;
+  const { title, content, imageUrl, category, tags } = req.body;
 
   try {
     const updatedBlog = await Blog.findByIdAndUpdate(
       id,
-      { title, content,  imageUrl, category },
+      { title, content, imageUrl, category, tags },
       { new: true, runValidators: true }
     );
     res.json(updatedBlog);

@@ -16,10 +16,12 @@ const BlogSchema = new mongoose.Schema({
   imageUrl: {
     type: String,
   },
+  tags: [{   
+    type: String,
+  }],
 }, {
-  timestamps: true,
+  timestamps: true, 
 });
 
 const Blog = mongoose.model('Blog', BlogSchema);
 module.exports = Blog;
-
