@@ -1,27 +1,29 @@
+// models/blogModel.js
 const mongoose = require('mongoose');
 
-const BlogSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: true,
+const blogSchema = new mongoose.Schema({
+  title: { 
+    type: String, 
+    required: true 
   },
-  content: {
-    type: String,
-    required: true,
+  content: { 
+    type: String, 
+    required: true 
   },
-  category: {
-    type: String,
-    required: true,
+  category: { 
+    type: String, 
+    required: true 
   },
-  imageUrl: {
-    type: String,
+  imageUrl: { 
+    type: String 
   },
-  tags: [{   
-    type: String,
+  tags: [{ 
+    type: String 
   }],
-}, {
-  timestamps: true, 
+  createdAt: { 
+    type: Date, 
+    default: Date.now 
+  }
 });
 
-const Blog = mongoose.model('Blog', BlogSchema);
-module.exports = Blog;
+module.exports = mongoose.model('Blog', blogSchema);
