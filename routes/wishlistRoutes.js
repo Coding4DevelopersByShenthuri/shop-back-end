@@ -15,6 +15,20 @@ router.get('/get-list/:uid', async (req, res) => {
     }
 });
 
+router.get('/wish-count/:uid', async (req, res) => {
+    const { uid } = req.params;
+    try {
+        const wishlistItems = await wishlistService.getWishlistItems(uid);
+        res.status(200).json({
+            count: wishlistItems[0].items.length
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+
+
 // Add a product to the wishlist for the authenticated user
 router.post('/add-list', async (req, res) => {
     const { productId, userId } = req.body; // Expecting product ID in the request body
