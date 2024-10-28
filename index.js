@@ -18,7 +18,6 @@ const recipeRoutes = require('./routes/recipeRoutes');
 const wishlistRoutes = require('./routes/wishlistRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const blogRoutes = require('./routes/blogRoutes');
-const cartRoutes = require('./routes/cartRoutes');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -45,7 +44,6 @@ connectDB().then(() => {
   app.use('/order', orderRoutes);
   app.use('/recipes', recipeRoutes);
   app.use('/wishlists', wishlistRoutes);
-  app.use('/carts', cartRoutes);
   app.use('/blogs', blogRoutes);
   app.use('/carts', cartRoutes);
   
