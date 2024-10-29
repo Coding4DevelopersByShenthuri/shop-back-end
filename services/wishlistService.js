@@ -47,6 +47,7 @@ const addProductToWishlist = async (userId, productId) => {
 const removeProductFromWishlist = async (userId, productId) => {
     try {
         const wishlist = await Wishlist.findOne({ userId: userId });
+        console.log(wishlist)
         if (wishlist) {
             // Remove the product ID from the wishlist
             wishlist.items = wishlist.items.filter((id) => id.toString() !== productId);
