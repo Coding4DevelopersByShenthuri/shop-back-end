@@ -15,18 +15,18 @@ router.get('/get-cart/:uid', async (req, res) => {
     }
 });
 
+// Get cart item count for the authenticated user
 router.get('/cart-count/:uid', async (req, res) => {
     const { uid } = req.params;
     try {
-        const cartlistItems = await cartlistService.getCartlistItems(uid);
+        const cartItems = await cartService.getCartItems(uid);
         res.status(200).json({
-            count: cartlistItems[0].items.length
+            count: cartItems.items.length // Assuming items is an array in the response
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 });
-
 
 // Add a product to the cart for the authenticated user
 router.post('/add-cart', async (req, res) => {
@@ -53,7 +53,7 @@ router.delete('/:productId', async (req, res) => {
 });
 
 // Clear the entire cart for the authenticated user
-router.delete('/clear', authMiddleware, async (req, res) => {
+router.delete('/clear-cart', authMiddleware, async (req, res) => {
     const userId = req.user.id; // Get user ID from the authenticated user
 
     try {

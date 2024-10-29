@@ -1,4 +1,5 @@
-const Cart = require('../models/cartModel'); // Change to the correct model
+const Cart = require('../models/cartModel');
+const cartService = require('../services/cartService');
 
 // 1. Get Cart
 exports.getCart = async (req, res) => {
@@ -16,11 +17,11 @@ exports.getCart = async (req, res) => {
 
 // 2. Add Item to Cart
 exports.addToCart = async (req, res) => {
-    const { productId, quantity } = req.body; // Including quantity for cart
+    const { productId, quantity } = req.body;
 
     // Validate input
-    if (!productId || !quantity) {
-        return res.status(400).json({ message: 'Product ID and quantity are required' });
+    if (!productId || quantity === undefined || quantity <= 0) {
+        return res.status(400).json({ message: 'Product ID and valid quantity are required' });
     }
 
     try {
@@ -30,13 +31,13 @@ exports.addToCart = async (req, res) => {
             // If no cart exists for the user, create one
             cart = new Cart({ userId: req.user.id, items: [{ productId, quantity }] });
         } else {
-            // Check if product already exists in cart
-            const existingItem = cart.items.find(item => item.productId.toString() === productId);
-            if (existingItem) {
-                // If product exists, update the quantity
-                existingItem.quantity += quantity; // Adjust this logic as needed
+            // Check if product is already in the cart
+            const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
+            if (itemIndex !== -1) {
+                // If product is already in the cart, update its quantity
+                cart.items[itemIndex].quantity += quantity;
             } else {
-                // If product is not already in cart, add it
+                // If product is not in the cart, add it
                 cart.items.push({ productId, quantity });
             }
         }
@@ -81,20 +82,19 @@ exports.removeFromCart = async (req, res) => {
 
 // 4. Clear Cart
 exports.clearCart = async (req, res) => {
+    const { userId } = req.body;
+
+    if (!userId) {
+        return res.status(400).json({ message: 'User ID is required.' });
+    }
+
     try {
-        const result = await Cart.findOneAndUpdate(
-            { userId: req.user.id },
-            { items: [] },
-            { new: true } // Return the updated document
-        );
-
-        if (!result) {
-            return res.status(404).json({ message: 'Cart not found' });
-        }
-
-        res.json({ message: 'Cart cleared' });
+        const response = await cartService.clearCart(userId);
+        return res.status(200).json(response);
     } catch (error) {
-        console.error('Error clearing cart:', error); // Log the error for debugging
-        res.status(500).json({ error: 'Failed to clear cart' });
+        if (error.message === 'Cart not found') {
+            return res.status(404).json({ message: error.message });
+        }
+        return res.status(500).json({ message: 'Internal server error.' });
     }
 };

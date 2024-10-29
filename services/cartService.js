@@ -1,10 +1,10 @@
-const Cart = require('../models/cartModel'); 
-const Product = require('../models/productModel'); 
+const Cart = require('../models/cartModel'); // Adjust the path according to your project structure
+const Product = require('../models/productModel'); // Assuming you have a Product model
 
 // Fetch all cart items for a user
 const getCartItems = async (userId) => {
     try {
-        const cart = await Cart.findOne({ userId: userId }).populate('items.productId'); // Populate to get product details
+        const cart = await Cart.findOne({ userId }).populate('items.productId'); // Populate to get product details
         return cart ? cart.items : []; // Return items or an empty array if cart doesn't exist
     } catch (error) {
         throw new Error('Error fetching cart items');
@@ -47,7 +47,7 @@ const addProductToCart = async (userId, productId, quantity) => {
 // Remove a product from the cart
 const removeProductFromCart = async (userId, productId) => {
     try {
-        const cart = await Cart.findOne({ userId: userId });
+        const cart = await Cart.findOne({ userId });
         if (cart) {
             // Remove the product ID from the cart
             cart.items = cart.items.filter(item => item.productId.toString() !== productId);
@@ -64,7 +64,7 @@ const removeProductFromCart = async (userId, productId) => {
 const clearCart = async (userId) => {
     try {
         const cart = await Cart.findOneAndUpdate(
-            { userId: userId },
+            { userId },
             { items: [] },
             { new: true } // Return the updated document
         );
