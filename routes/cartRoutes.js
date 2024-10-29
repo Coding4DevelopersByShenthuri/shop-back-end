@@ -40,11 +40,9 @@ router.post('/add-cart', async (req, res) => {
 });
 
 // Remove a specific product from the cart for the authenticated user
-router.delete('/:productId', async (req, res) => {
+router.delete('/product/:productId', async (req, res) => {
     const productId = req.params.productId;
     const { userId } = req.body; 
-    console.log(productId)
-    console.log(userId)
     try {
         const message = await cartService.removeProductFromCart(userId, productId);
         res.status(200).json(message);
@@ -54,8 +52,8 @@ router.delete('/:productId', async (req, res) => {
 });
 
 // Clear the entire cart for the authenticated user
-router.delete('/clear-cart', authMiddleware, async (req, res) => {
-    const userId = req.user.id; // Get user ID from the authenticated user
+router.delete('/clear-cart', async (req, res) => {
+    const userId = req.body.userId; // Get user ID from the authenticated user
 
     try {
         const message = await cartService.clearCart(userId); // Implement clearCart in your service
