@@ -15,6 +15,19 @@ router.get('/get-cart/:uid', async (req, res) => {
     }
 });
 
+router.get('/cart-count/:uid', async (req, res) => {
+    const { uid } = req.params;
+    try {
+        const cartlistItems = await cartlistService.getCartlistItems(uid);
+        res.status(200).json({
+            count: cartlistItems[0].items.length
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+
 // Add a product to the cart for the authenticated user
 router.post('/add-cart', async (req, res) => {
     const { productId, userId, quantity } = req.body; // Expecting product ID and quantity in the request body
@@ -28,8 +41,8 @@ router.post('/add-cart', async (req, res) => {
 
 // Remove a specific product from the cart for the authenticated user
 router.delete('/:productId', async (req, res) => {
-    const { productId } = req.params;
-    const { userId } = req.body; // Access userId from the request body
+    const productId = req.params.productId;
+    const { userId } = req.body; 
 
     try {
         const message = await cartService.removeProductFromCart(userId, productId);
