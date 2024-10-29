@@ -1,5 +1,5 @@
-const Cart = require('../models/cartModel'); // Adjust the path according to your project structure
-const Product = require('../models/productModel'); // Assuming you have a Product model
+const Cart = require('../models/cartModel'); 
+const Product = require('../models/productModel'); 
 
 // Fetch all cart items for a user
 const getCartItems = async (userId) => {
