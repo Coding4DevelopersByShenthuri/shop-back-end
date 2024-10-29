@@ -21,7 +21,7 @@ router.get('/cart-count/:uid', async (req, res) => {
     try {
         const cartItems = await cartService.getCartItems(uid);
         res.status(200).json({
-            count: cartItems.items.length // Assuming items is an array in the response
+            count: cartItems.length // Assuming items is an array in the response
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -43,7 +43,8 @@ router.post('/add-cart', async (req, res) => {
 router.delete('/:productId', async (req, res) => {
     const productId = req.params.productId;
     const { userId } = req.body; 
-
+    console.log(productId)
+    console.log(userId)
     try {
         const message = await cartService.removeProductFromCart(userId, productId);
         res.status(200).json(message);

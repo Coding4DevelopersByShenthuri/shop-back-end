@@ -50,7 +50,7 @@ const removeProductFromCart = async (userId, productId) => {
         const cart = await Cart.findOne({ userId });
         if (cart) {
             // Remove the product ID from the cart
-            cart.items = cart.items.filter(item => item.productId.toString() !== productId);
+            cart.items = cart.items.filter((id) => id._id.toString() !== productId);
             await cart.save();
             return { message: 'Product removed from cart' };
         }
