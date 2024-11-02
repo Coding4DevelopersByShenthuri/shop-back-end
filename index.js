@@ -20,7 +20,6 @@ const cartRoutes = require('./routes/cartRoutes');
 const blogRoutes = require('./routes/blogRoutes');
 
 const app = express();
-const port = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
@@ -46,16 +45,10 @@ connectDB().then(() => {
   app.use('/wishlists', wishlistRoutes);
   app.use('/blogs', blogRoutes);
   app.use('/carts', cartRoutes);
-  
-  // New birthday route for fetching upcoming birthdays
-  app.use('/upcoming-birthdays', birthdayRoutes); 
-  
-  // Add other route uses...
-
-  // Start the server
-  app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-  });
+  app.use('/upcoming-birthdays', birthdayRoutes);
 }).catch(error => {
-  console.error("Failed to start the server:", error);
+  console.error("Failed to connect to the database:", error);
 });
+
+// Export the app (no need for app.listen on Vercel)
+module.exports = app;
