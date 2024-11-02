@@ -22,7 +22,10 @@ const blogRoutes = require('./routes/blogRoutes');
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: '*', // or specify the allowed origin(s)
+}));
+
 app.use(express.json());
 
 // Serve static files from the 'uploads' directory
@@ -46,6 +49,14 @@ connectDB().then(() => {
   app.use('/blogs', blogRoutes);
   app.use('/carts', cartRoutes);
   app.use('/upcoming-birthdays', birthdayRoutes);
+
+
+  if (process.env.NODE_ENV !== 'production') {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+      console.log(`Server is running locally on port ${PORT}`);
+    });
+  }
 }).catch(error => {
   console.error("Failed to connect to the database:", error);
 });
