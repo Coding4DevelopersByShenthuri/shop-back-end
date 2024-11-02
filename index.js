@@ -32,7 +32,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/uploads', express.static(path.join(__dirname, 'attendance')));
 
 // Health check route
-app.get('/health', (req, res) => {
+app.get('/', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
