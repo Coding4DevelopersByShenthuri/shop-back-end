@@ -36,35 +36,34 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-app.use('/product', productRoutes);
 
 // Connect to the database
-// connectDB().then(() => {
-//   // Use routes
-//   app.use('/staff', staffRoutes);
-//   app.use('/tasks', taskRoutes);
-//   app.use('/product', productRoutes);
-//   app.use('/stock', stockRoutes);
-//   app.use('/user', userRoutes);
-//   app.use('/attendance', attendanceRoutes);
-//   app.use('/contact', contactRoutes);
-//   app.use('/birthday', birthdayRoutes);
-//   app.use('/order', orderRoutes);
-//   app.use('/recipes', recipeRoutes);
-//   app.use('/wishlists', wishlistRoutes);
-//   app.use('/blogs', blogRoutes);
-//   app.use('/carts', cartRoutes);
-//   app.use('/upcoming-birthdays', birthdayRoutes);
+connectDB().then(() => {
+  // Use routes
+  app.use('/staff', staffRoutes);
+  app.use('/tasks', taskRoutes);
+  app.use('/product', productRoutes);
+  app.use('/stock', stockRoutes);
+  app.use('/user', userRoutes);
+  app.use('/attendance', attendanceRoutes);
+  app.use('/contact', contactRoutes);
+  app.use('/birthday', birthdayRoutes);
+  app.use('/order', orderRoutes);
+  app.use('/recipes', recipeRoutes);
+  app.use('/wishlists', wishlistRoutes);
+  app.use('/blogs', blogRoutes);
+  app.use('/carts', cartRoutes);
+  app.use('/upcoming-birthdays', birthdayRoutes);
 
-//   if (process.env.NODE_ENV !== 'production') {
-//     const PORT = process.env.PORT || 3000;
-//     app.listen(PORT, () => {
-//       console.log(`Server is running locally on port ${PORT}`);
-//     });
-//   }
-// }).catch(error => {
-//   console.error("Failed to connect to the database:", error);
-// });
+  if (process.env.NODE_ENV !== 'production') {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+      console.log(`Server is running locally on port ${PORT}`);
+    });
+  }
+}).catch(error => {
+  console.error("Failed to connect to the database:", error);
+});
 
 // Export the app (no need for app.listen on Vercel)
 module.exports = app;
