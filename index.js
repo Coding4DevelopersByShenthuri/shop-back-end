@@ -36,13 +36,16 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-
+// MongoDB connection
+connectDB().then(() => console.log('MongoDB connected'))
+.catch((error) => console.error('MongoDB connection error:', error));
+app.use('/product', productRoutes);
 // Connect to the database
 connectDB().then(() => {
   // Use routes
   app.use('/staff', staffRoutes);
   app.use('/tasks', taskRoutes);
-  app.use('/product', productRoutes);
+  //app.use('/product', productRoutes);
   app.use('/stock', stockRoutes);
   app.use('/user', userRoutes);
   app.use('/attendance', attendanceRoutes);
