@@ -31,6 +31,7 @@ router.post('/upload-product', async (req, res) => {
 
 // Get all products
 router.get('/all-products', async (req, res) => {
+  console.log("Fetching all products...");
   try {
     const products = await productService.getAllProducts();
     res.status(200).send(products);
