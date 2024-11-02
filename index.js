@@ -25,12 +25,16 @@ const app = express();
 app.use(cors({
   origin: '*', // or specify the allowed origin(s)
 }));
-
 app.use(express.json());
 
 // Serve static files from the 'uploads' directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/uploads', express.static(path.join(__dirname, 'attendance')));
+
+// Health check route
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
 
 // Connect to the database
 connectDB().then(() => {
@@ -49,7 +53,6 @@ connectDB().then(() => {
   app.use('/blogs', blogRoutes);
   app.use('/carts', cartRoutes);
   app.use('/upcoming-birthdays', birthdayRoutes);
-
 
   if (process.env.NODE_ENV !== 'production') {
     const PORT = process.env.PORT || 3000;
