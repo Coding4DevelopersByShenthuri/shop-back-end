@@ -10,6 +10,22 @@ const getAllBlogs = async (req, res) => {
   }
 };
 
+// Get a Blog by ID
+const getBlogById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const blog = await Blog.findById(id);
+    if (blog) {
+      res.json(blog);
+    } else {
+      res.status(404).json({ message: 'Blog not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching Blog', error });
+  }
+};
+
 // Create a new Blog
 const createBlog = async (req, res) => {
   const { title, content, imageUrl, category, tags } = req.body;
@@ -54,6 +70,7 @@ const deleteBlog = async (req, res) => {
 
 module.exports = {
   getAllBlogs,
+  getBlogById,
   createBlog,
   updateBlog,
   deleteBlog,

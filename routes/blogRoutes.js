@@ -5,6 +5,7 @@ const {
   createBlog,
   updateBlog,
   deleteBlog,
+  getBlogById
 } = require('../controllers/blogController'); // Ensure consistent capitalization in file paths if needed
 
 const router = express.Router();
@@ -17,6 +18,9 @@ router.post('/', createBlog);
 
 // PUT to update a blog by ID
 router.put('/:id', updateBlog);
+
+// GET blog by ID
+router.get('/blog/:id', getBlogById);
 
 // DELETE a blog by ID
 router.delete('/:id', deleteBlog);
