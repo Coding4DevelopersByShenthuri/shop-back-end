@@ -52,9 +52,24 @@ const deleteRecipe = async (req, res) => {
   }
 };
 
+const getRecipeById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const recipe = await Recipe.findById(id);
+    if (!recipe) {
+      return res.status(404).json({ message: 'Recipe not found' });
+    }
+    res.json(recipe);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching recipe', error });
+  }
+};
+
 module.exports = {
   getAllRecipes,
   createRecipe,
   updateRecipe,
   deleteRecipe,
+  getRecipeById
 };
