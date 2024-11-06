@@ -118,13 +118,6 @@ router.post('/upload-product-image', upload.single('image'), async (req, res) =>
     // Create the desired imageUrl format
     const imageUrl = `${baseUrl}/uploads/${fileName}`;
 
-
-    // Upload the file to Vercel Blob Storage
-    const { url } = await put(filePath, req.file.buffer, {
-      access: 'public', // Public access to the file
-    });
-
-
     // Update the product document with image URL and path
     const updateDoc = {
       $set: {
