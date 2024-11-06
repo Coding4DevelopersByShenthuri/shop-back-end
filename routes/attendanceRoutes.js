@@ -8,6 +8,7 @@ const Attendance = require('../models/attendanceModel'); // Ensure this is the c
 const Staff = require('../models/staffModel');
 const staffService = require('../services/staffService');
 const path = require('path');
+const { put } = require('@vercel/blob');
 
 
 
@@ -110,27 +111,37 @@ router.post('/mark-attendance', async (req, res) => {
         }
         )
 
-        let doc = new PDFDocument(); // Create a new PDF document
-        await generateAttendancePDF(attendanceEntries, formattedDate, new Date().toLocaleDateString(), doc);
+        // Create a new PDF document
+        let doc = new PDFDocument();
+        await generateAttendancePDF(req.body.attendanceEntries, formattedDate, new Date().toLocaleDateString(), doc);
 
-        const writeStream = fs.createWriteStream(pdfFilePath);
-        doc.pipe(writeStream);
+        if (process.env.VERCEL_ENV === 'production') {
+          // Vercel production: Store the PDF in Blob Storage
+          const pdfChunks = [];
+          doc.on('data', chunk => pdfChunks.push(chunk));
+          doc.end();
 
-        writeStream.on('finish', () => {
+          const pdfBuffer = Buffer.concat(pdfChunks);
+          const { url } = await put(`attendance_reports/attendance_report_${formattedDate}.pdf`, pdfBuffer, { access: 'public' });
+
           res.status(201).json({
-            message: 'Attendance recorded successfully, and PDF generated/updated1',
-            data: attendanceEntries.find(e => e.staffId == staffId)
+            message: 'Attendance recorded successfully, and PDF generated/updated on Blob Storage',
+            url: url,
+            data: req.body.attendanceEntries.find(e => e.staffId == req.body.staffId)
           });
-        });
+        } else {
+          // Local environment: Store the PDF locally
+          const writeStream = fs.createWriteStream(pdfFilePath);
+          doc.pipe(writeStream);
+          doc.end();
 
-        writeStream.on('error', (err) => {
-          console.log('Error writing PDF:', err);
-          res.status(500).json({ message: 'Error generating PDF' });
-        });
-
-        // Finalize the PDF document
-        doc.end();
-        // Handle the results as needed
+          writeStream.on('finish', () => {
+            res.status(201).json({
+              message: 'Attendance recorded successfully, and PDF generated/updated locally',
+              data: req.body.attendanceEntries.find(e => e.staffId == req.body.staffId)
+            });
+          });
+        }
       } catch (error) {
         console.log(error);
         // You can also handle the error further, like returning an error response in an Express app
