@@ -111,33 +111,7 @@ router.post('/mark-attendance', async (req, res) => {
           }
         }
         )
-
-        // const [day, month, year] = istDate.split(',')[0].split('/');
-        // const formattedDate = `${year}-${month}-${day}`;
-        // const pdfFilePath = `./attendance/attendance_report_${formattedDate}.pdf`; // Unique PDF file per date
-
-        // let doc = new PDFDocument(); // Create a new PDF document
-        // await generateAttendancePDF(attendanceEntries, formattedDate, new Date().toLocaleDateString(), doc);
-
-        // const writeStream = fs.createWriteStream(pdfFilePath);
-        // doc.pipe(writeStream);
-
-        // writeStream.on('finish', () => {
-        //   res.status(201).json({
-        //     message: 'Attendance recorded successfully, and PDF generated/updated1',
-        //     data: attendanceEntries.find(e => e.staffId == staffId)
-        //   });
-        // });
-
-        // writeStream.on('error', (err) => {
-        //   console.log('Error writing PDF:', err);
-        //   res.status(500).json({ message: 'Error generating PDF' });
-        // });
-        // doc.end();
-
-        // Create a new PDF document
-
-        
+  
         let doc = new PDFDocument();
 
         try {
@@ -195,8 +169,6 @@ router.post('/mark-attendance', async (req, res) => {
           console.error('Failed to generate attendance PDF:', error);
           res.status(500).json({ message: 'Error generating attendance PDF' });
         }
-        
-        
         
       } catch (error) {
         res.status(500).json(error);
