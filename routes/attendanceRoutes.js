@@ -155,7 +155,9 @@ router.post('/mark-attendance', async (req, res) => {
         
               const { url } = await put(pdfFilePath, pdfBuffer, {
                 access: 'public',
-                headers: { 'Content-Length': contentLength } // Set Content-Length header
+                headers: { 'Content-Length': contentLength,         // Standard Content-Length header
+          'x-content-length': contentLength 
+                       }       // Custom Vercel-specific header } // Set Content-Length header
               });
         
               res.status(201).json({
