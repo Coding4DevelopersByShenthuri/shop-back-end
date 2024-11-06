@@ -159,7 +159,7 @@ router.post('/mark-attendance', async (req, res) => {
               });
             } catch (error) {
               console.error('Failed to store PDF in Blob Storage:', error);
-              res.status(500).json({ message: 'Error storing PDF on Blob Storage' });
+              res.status(500).json({ message: error });
             }
           } else {
             // Local environment: Store the PDF locally
