@@ -53,9 +53,9 @@ router.post('/mark-attendance', async (req, res) => {
   });
 
 
-        const [day, month, year] = istDate.split(',')[0].split('/');
-        const formattedDate = `${year}-${month}-${day}`;
-        const pdfFilePath = `./attendance/attendance_report_${formattedDate}.pdf`; // Unique PDF file per date
+  const [day, month, year] = istDate.split(',')[0].split('/');
+  const formattedDate = `${year}-${month}-${day}`;
+  const pdfFilePath = `./attendance/attendance_report_${formattedDate}.pdf`; // Unique PDF file per date
 
   if (staffId) {
     try {
@@ -141,6 +141,7 @@ router.post('/mark-attendance', async (req, res) => {
 
         if (process.env.VERCEL_ENV === 'production') {
           // Vercel production: Store the PDF in Blob Storage
+          res.status(500).json('error');
           const pdfChunks = [];
           doc.on('data', chunk => pdfChunks.push(chunk));
           doc.end();
