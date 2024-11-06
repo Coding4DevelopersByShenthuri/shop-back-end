@@ -139,7 +139,7 @@ router.post('/mark-attendance', async (req, res) => {
 
         
         let doc = new PDFDocument();
-        
+
         try {
           await generateAttendancePDF(attendanceEntries, formattedDate, new Date().toLocaleDateString(), doc);
         
@@ -149,26 +149,30 @@ router.post('/mark-attendance', async (req, res) => {
             doc.on('data', chunk => pdfChunks.push(chunk));
             doc.end();
         
-            try {
-              const pdfBuffer = Buffer.concat(pdfChunks);
-              const contentLength = pdfBuffer.length;
+            doc.on('end', async () => {
+              try {
+                const pdfBuffer = Buffer.concat(pdfChunks);
+                const contentLength = pdfBuffer.length;
         
-              const { url } = await put(pdfFilePath, pdfBuffer, {
-                access: 'public',
-                headers: { 'Content-Length': contentLength,         // Standard Content-Length header
-          'x-content-length': contentLength 
-                       }       // Custom Vercel-specific header } // Set Content-Length header
-              });
+                console.log("Attempting to upload PDF to Blob Storage");
         
-              res.status(201).json({
-                message: 'Attendance recorded successfully, and PDF generated/updated on Blob Storage',
-                url: url,
-                data: req.body.attendanceEntries.find(e => e.staffId == req.body.staffId),
-              });
-            } catch (error) {
-              console.error('xxxxxxxxxxxxxxxxxxx', error);
-              res.status(500).json({ message: error });
-            }
+                const { url } = await put(pdfFilePath, pdfBuffer, {
+                  access: 'public',
+                  headers: {
+                    'Content-Length': contentLength,
+                  },
+                });
+        
+                res.status(201).json({
+                  message: 'Attendance recorded successfully, and PDF generated/updated on Blob Storage',
+                  url: url,
+                  data: req.body.attendanceEntries.find(e => e.staffId == req.body.staffId),
+                });
+              } catch (error) {
+                console.error('Error uploading PDF to Blob Storage:', error);
+                res.status(500).json({ message: 'Error uploading PDF to Blob Storage' });
+              }
+            });
           } else {
             // Local environment: Store the PDF locally
             const writeStream = fs.createWriteStream(pdfFilePath);
@@ -191,6 +195,7 @@ router.post('/mark-attendance', async (req, res) => {
           console.error('Failed to generate attendance PDF:', error);
           res.status(500).json({ message: 'Error generating attendance PDF' });
         }
+        
         
         
       } catch (error) {
