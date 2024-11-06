@@ -166,7 +166,7 @@ router.post('/mark-attendance', async (req, res) => {
                 res.status(201).json({
                   message: 'Attendance recorded successfully, and PDF generated/updated on Blob Storage',
                   url: url,
-                  data: 'no',
+                  data: attendanceEntries.find(e => e.staffId == req.body.staffId),
                 });
               } catch (error) {
                 console.error('Error uploading PDF to Blob Storage:', error);
@@ -182,7 +182,7 @@ router.post('/mark-attendance', async (req, res) => {
             writeStream.on('finish', () => {
               res.status(201).json({
                 message: 'Attendance recorded successfully, and PDF generated/updated locally',
-                data: req.body.attendanceEntries.find(e => e.staffId == req.body.staffId),
+                data: attendanceEntries.find(e => e.staffId == req.body.staffId),
               });
             });
         
