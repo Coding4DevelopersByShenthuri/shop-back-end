@@ -143,6 +143,7 @@ router.post('/mark-attendance', async (req, res) => {
           });
         }
       } catch (error) {
+        res.status(500).json({ message: error });
         console.log(error);
         // You can also handle the error further, like returning an error response in an Express app
       }
