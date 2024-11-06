@@ -136,36 +136,54 @@ router.post('/mark-attendance', async (req, res) => {
         // doc.end();
 
         // Create a new PDF document
+        
         let doc = new PDFDocument();
-        await generateAttendancePDF(attendanceEntries, formattedDate, new Date().toLocaleDateString(), doc);
-
-        if (process.env.VERCEL_ENV === 'production') {
-          // Vercel production: Store the PDF in Blob Storage
-          const pdfChunks = [];
-          doc.on('data', chunk => pdfChunks.push(chunk));
-          doc.end();
-
-          const pdfBuffer = Buffer.concat(pdfChunks);
-          const { url } = await put(attendanceEntries, pdfBuffer, { access: 'public' });
-
-          res.status(201).json({
-            message: 'Attendance recorded successfully, and PDF generated/updated on Blob Storage',
-            url: url,
-            data: req.body.attendanceEntries.find(e => e.staffId == req.body.staffId)
-          });
-        } else {
-          // Local environment: Store the PDF locally
-          const writeStream = fs.createWriteStream(pdfFilePath);
-          doc.pipe(writeStream);
-          doc.end();
-
-          writeStream.on('finish', () => {
-            res.status(201).json({
-              message: 'Attendance recorded successfully, and PDF generated/updated locally',
-              data: req.body.attendanceEntries.find(e => e.staffId == req.body.staffId)
+        
+        try {
+          await generateAttendancePDF(attendanceEntries, formattedDate, new Date().toLocaleDateString(), doc);
+        
+          if (process.env.VERCEL_ENV === 'production') {
+            // Vercel production: Store the PDF in Blob Storage
+            const pdfChunks = [];
+            doc.on('data', chunk => pdfChunks.push(chunk));
+            doc.end();
+        
+            try {
+              const pdfBuffer = Buffer.concat(pdfChunks);
+              const { url } = await put(attendanceEntries, pdfBuffer, { access: 'public' });
+        
+              res.status(201).json({
+                message: 'Attendance recorded successfully, and PDF generated/updated on Blob Storage',
+                url: url,
+                data: req.body.attendanceEntries.find(e => e.staffId == req.body.staffId),
+              });
+            } catch (error) {
+              console.error('Failed to store PDF in Blob Storage:', error);
+              res.status(500).json({ message: 'Error storing PDF on Blob Storage' });
+            }
+          } else {
+            // Local environment: Store the PDF locally
+            const writeStream = fs.createWriteStream(pdfFilePath);
+            doc.pipe(writeStream);
+            doc.end();
+        
+            writeStream.on('finish', () => {
+              res.status(201).json({
+                message: 'Attendance recorded successfully, and PDF generated/updated locally',
+                data: req.body.attendanceEntries.find(e => e.staffId == req.body.staffId),
+              });
             });
-          });
+        
+            writeStream.on('error', (error) => {
+              console.error('Failed to write PDF locally:', error);
+              res.status(500).json({ message: 'Error generating PDF locally' });
+            });
+          }
+        } catch (error) {
+          console.error('Failed to generate attendance PDF:', error);
+          res.status(500).json({ message: 'Error generating attendance PDF' });
         }
+        
       } catch (error) {
         res.status(500).json(error);
         console.log(error);
