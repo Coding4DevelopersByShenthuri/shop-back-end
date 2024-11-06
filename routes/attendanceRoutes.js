@@ -181,7 +181,7 @@ router.post('/mark-attendance', async (req, res) => {
           }
         } catch (error) {
           console.error('Failed to generate attendance PDF:', error);
-          res.status(500).json({ message: 'Error generating attendance PDF' });
+          res.status(500).json({ message: error });
         }
         
       } catch (error) {
