@@ -8,6 +8,7 @@ const Attendance = require('../models/attendanceModel'); // Ensure this is the c
 const Staff = require('../models/staffModel');
 const staffService = require('../services/staffService');
 const path = require('path');
+const FormData = require('form-data');
 const { put } = require('@vercel/blob');
 
 
@@ -137,6 +138,7 @@ router.post('/mark-attendance', async (req, res) => {
 
         // Create a new PDF document
 
+      
         
         let doc = new PDFDocument();
         
@@ -149,25 +151,28 @@ router.post('/mark-attendance', async (req, res) => {
             doc.on('data', chunk => pdfChunks.push(chunk));
             doc.end();
         
-            try {
-              const pdfBuffer = Buffer.concat(pdfChunks);
-              const contentLength = pdfBuffer.length;
+            const pdfBuffer = Buffer.concat(pdfChunks);
         
-              const { url } = await put(pdfFilePath, pdfBuffer, {
-                access: 'public',
-                headers: { 'Content-Length': contentLength,         // Standard Content-Length header
-          'x-content-length': contentLength 
-                       }       // Custom Vercel-specific header } // Set Content-Length header
+            // Use FormData to handle file upload
+            const form = new FormData();
+            form.append('file', pdfBuffer, { filename: 'attendance.pdf', contentType: 'application/pdf' });
+        
+            try {
+              const response = await axios.post('https://9hxma4esqaukabsl.public.blob.vercel-storage.com', form, {
+                headers: {
+                  ...form.getHeaders(),
+                  'x-content-length': pdfBuffer.length  // Ensures x-content-length is set
+                }
               });
         
               res.status(201).json({
                 message: 'Attendance recorded successfully, and PDF generated/updated on Blob Storage',
-                url: url,
+                url: response.data.url, // Adjust based on the actual response
                 data: req.body.attendanceEntries.find(e => e.staffId == req.body.staffId),
               });
             } catch (error) {
-              console.error('xxxxxxxxxxxxxxxxxxx', error);
-              res.status(500).json({ message: error });
+              console.error('Failed to store PDF in Blob Storage:', error);
+              res.status(500).json({ message: 'Error storing PDF on Blob Storage' });
             }
           } else {
             // Local environment: Store the PDF locally
@@ -191,6 +196,7 @@ router.post('/mark-attendance', async (req, res) => {
           console.error('Failed to generate attendance PDF:', error);
           res.status(500).json({ message: 'Error generating attendance PDF' });
         }
+        
         
         
       } catch (error) {
