@@ -153,7 +153,7 @@ router.post('/mark-attendance', async (req, res) => {
               const pdfBuffer = Buffer.concat(pdfChunks);
               const contentLength = pdfBuffer.length;
         
-              const { url } = await put(attendanceEntries, pdfBuffer, {
+              const { url } = await put(pdfFilePath, pdfBuffer, {
                 access: 'public',
                 headers: { 'Content-Length': contentLength } // Set Content-Length header
               });
@@ -164,8 +164,8 @@ router.post('/mark-attendance', async (req, res) => {
                 data: req.body.attendanceEntries.find(e => e.staffId == req.body.staffId),
               });
             } catch (error) {
-              console.error('Failed to store PDF in Blob Storage:', error);
-              res.status(500).json({ message: 'Error storing PDF on Blob Storage' });
+              console.error('xxxxxxxxxxxxxxxxxxx', error);
+              res.status(500).json({ message: error });
             }
           } else {
             // Local environment: Store the PDF locally
