@@ -141,7 +141,6 @@ router.post('/mark-attendance', async (req, res) => {
 
         if (process.env.VERCEL_ENV === 'production') {
           // Vercel production: Store the PDF in Blob Storage
-          res.status(500).json('error');
           const pdfChunks = [];
           doc.on('data', chunk => pdfChunks.push(chunk));
           doc.end();
