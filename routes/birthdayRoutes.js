@@ -41,7 +41,7 @@ router.post('/send-wish', async (req, res) => {
   // Basic birthday template with dynamic content
   const htmlTemplate = `
     <div style="font-family: Arial, sans-serif; color: #333; text-align: center; padding: 20px;">
-      <h1 style="color: #4CAF50;">🎂 Happy Birthday, ${name}! 🎂</h1>
+      <h1 style="color: #4CAF50;">🎂 Happy Birthday, Enjoy a 10% discount on your purchase!, ${name}! 🎂</h1>
       <p style="font-size: 18px;">We hope you have a fantastic day filled with joy, love, and laughter!</p>
       <p>${message}</p>
       <div style="margin-top: 20px;">
