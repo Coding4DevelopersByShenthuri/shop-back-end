@@ -190,7 +190,7 @@ router.post('/mark-attendance', async (req, res) => {
 // Route for saving attendance data and generating a PDF report
 router.post('/', async (req, res) => {
   try {
-    const { attendanceEntries, selectedDate } = req.body; // Expecting an array of { staffId, name, present }
+    const { attendanceEntries, selectedDate } = req.body;
 
     // Validate that each entry contains a valid ObjectId and a boolean for 'present'
     attendanceEntries.forEach((entry) => {
@@ -206,53 +206,77 @@ router.post('/', async (req, res) => {
     await Attendance.insertMany(attendanceEntries);
 
     // Set file path based on the selected date
-    const formattedDate = new Date(selectedDate).toISOString().split('T')[0]; // Format the date to YYYY-MM-DD
-    const pdfFilePath = `./attendance/attendance_report_${formattedDate}.pdf`; // Unique PDF file per date
+    const formattedDate = new Date(selectedDate).toISOString().split('T')[0];
+    const pdfFilePath = `./attendance/attendance_report_${formattedDate}.pdf`;
 
-    let doc = new PDFDocument(); // Create a new PDF document
+    let doc = new PDFDocument();
 
     // Check if the PDF already exists
     if (fs.existsSync(pdfFilePath)) {
-      // Read the existing PDF
       const existingPdfBytes = fs.readFileSync(pdfFilePath);
       const existingPdfDoc = await PDFLibDocument.load(existingPdfBytes);
-
-      // Create a new PDF document to hold the merged content
       const newPdfDoc = await PDFLibDocument.create();
       const copiedPages = await newPdfDoc.copyPages(existingPdfDoc, existingPdfDoc.getPageIndices());
+      copiedPages.forEach((page) => newPdfDoc.addPage(page));
 
-      // Add copied pages to the new PDF document
-      copiedPages.forEach((page) => {
-        newPdfDoc.addPage(page);
-      });
-
-      // Generate the PDF with the merged attendance
       await generateAttendancePDF(attendanceEntries, selectedDate, new Date().toLocaleDateString(), doc);
     } else {
-      // If PDF does not exist, create a new one
       await generateAttendancePDF(attendanceEntries, selectedDate, new Date().toLocaleDateString(), doc);
     }
 
-    // Pipe the PDF to the write stream
-    const writeStream = fs.createWriteStream(pdfFilePath);
-    doc.pipe(writeStream);
+    if (process.env.VERCEL_ENV === 'production') {
+      // Vercel production: Store the PDF in Blob Storage
+      const pdfChunks = [];
+      doc.on('data', chunk => pdfChunks.push(chunk));
+      doc.end();
 
-    // Finalize the PDF and close the stream
-    doc.end();
+      doc.on('end', async () => {
+        try {
+          const pdfBuffer = Buffer.concat(pdfChunks);
+          const contentLength = pdfBuffer.length;
 
-    writeStream.on('finish', () => {
-      res.status(201).json({ message: 'Attendance recorded successfully, and PDF generated/updated' });
-    });
+          console.log("Attempting to upload PDF to Blob Storage");
 
-    writeStream.on('error', (err) => {
-      console.error('Error writing PDF:', err);
-      res.status(500).json({ message: 'Error generating PDF' });
-    });
+          const { url } = await put(pdfFilePath, pdfBuffer, {
+            access: 'public',
+            headers: {
+              'Content-Length': contentLength,
+            },
+          });
 
+          res.status(201).json({
+            message: 'Attendance recorded successfully, and PDF generated/updated on Blob Storage',
+            url: url,
+            data: attendanceEntries.find(e => e.staffId == req.body.staffId),
+          });
+        } catch (error) {
+          console.error('Error uploading PDF to Blob Storage:', error);
+          res.status(500).json({ message: 'Error uploading PDF to Blob Storage' });
+        }
+      });
+    } else {
+      // Local environment: Store the PDF locally
+      const writeStream = fs.createWriteStream(pdfFilePath);
+      doc.pipe(writeStream);
+      doc.end();
+
+      writeStream.on('finish', () => {
+        res.status(201).json({
+          message: 'Attendance recorded successfully, and PDF generated/updated locally',
+          data: attendanceEntries.find(e => e.staffId == req.body.staffId),
+        });
+      });
+
+      writeStream.on('error', (error) => {
+        console.error('Failed to write PDF locally:', error);
+        res.status(500).json({ message: 'Error generating PDF locally' });
+      });
+    }
   } catch (error) {
     console.error("Error saving attendance:", error);
     res.status(400).json({ error: error.message });
   }
 });
+
 
 module.exports = router;
