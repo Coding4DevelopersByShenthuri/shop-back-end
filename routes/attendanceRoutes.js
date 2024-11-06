@@ -136,6 +136,7 @@ router.post('/mark-attendance', async (req, res) => {
         // doc.end();
 
         // Create a new PDF document
+
         
         let doc = new PDFDocument();
         
@@ -150,7 +151,12 @@ router.post('/mark-attendance', async (req, res) => {
         
             try {
               const pdfBuffer = Buffer.concat(pdfChunks);
-              const { url } = await put(attendanceEntries, pdfBuffer, { access: 'public' });
+              const contentLength = pdfBuffer.length;
+        
+              const { url } = await put(attendanceEntries, pdfBuffer, {
+                access: 'public',
+                headers: { 'Content-Length': contentLength } // Set Content-Length header
+              });
         
               res.status(201).json({
                 message: 'Attendance recorded successfully, and PDF generated/updated on Blob Storage',
@@ -159,7 +165,7 @@ router.post('/mark-attendance', async (req, res) => {
               });
             } catch (error) {
               console.error('Failed to store PDF in Blob Storage:', error);
-              res.status(500).json({ message: error });
+              res.status(500).json({ message: 'Error storing PDF on Blob Storage' });
             }
           } else {
             // Local environment: Store the PDF locally
@@ -181,8 +187,9 @@ router.post('/mark-attendance', async (req, res) => {
           }
         } catch (error) {
           console.error('Failed to generate attendance PDF:', error);
-          res.status(500).json({ message: error });
+          res.status(500).json({ message: 'Error generating attendance PDF' });
         }
+        
         
       } catch (error) {
         res.status(500).json(error);
