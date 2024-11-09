@@ -1,5 +1,5 @@
 const express = require('express');
-const FileService = require('./fileService');
+const fileService = require('../services/fileService');
 
 const router = express.Router();
 

@@ -1,4 +1,4 @@
-const FileModel = require('./fileModel');
+const FileModel = require('../models/fileModel');
 
 const FileService = {
   async deleteFile(filePath) {
