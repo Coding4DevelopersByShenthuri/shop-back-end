@@ -18,6 +18,7 @@ const recipeRoutes = require('./routes/recipeRoutes');
 const wishlistRoutes = require('./routes/wishlistRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const blogRoutes = require('./routes/blogRoutes');
+const fileRoutes = require('./routes/fileRoutes');
 
 const app = express();
 
@@ -54,6 +55,7 @@ app.use('/wishlists', wishlistRoutes);
 app.use('/blogs', blogRoutes);
 app.use('/carts', cartRoutes);
 app.use('/upcoming-birthdays', birthdayRoutes);
+app.use('/file', fileRoutes);
 
 if (process.env.NODE_ENV !== 'production') {
   const PORT = process.env.PORT || 3000;

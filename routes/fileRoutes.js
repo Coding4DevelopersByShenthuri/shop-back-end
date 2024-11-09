@@ -1,19 +1,26 @@
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
+const FileService = require('./fileService');
 
-const app = express();
+const router = express.Router();
 
-app.delete('/delete-file', (req, res) => {
-  const { filePath } = req.body; 
+// DELETE route to delete a file
+router.delete('/delete-file', async (req, res) => {
+  const { filePath } = req.body;
+
   if (!filePath) {
     return res.status(400).json({ message: 'File path is required' });
   }
-  
-  fs.rm(filePath, { recursive: true, force: true }, (err) => {
-    if (err) {
-      return res.status(500).json({ message: 'Failed to delete file' });
+
+  try {
+    // Delete the file through the FileService
+    const result = await FileService.deleteFile(filePath);
+    res.status(200).json({ message: result });
+  } catch (error) {
+    if (error.message === 'File not found') {
+      return res.status(404).json({ message: 'File not found' });
     }
-    res.status(200).json({ message: 'File deleted successfully' });
-  });
+    res.status(500).json({ message: error.message });
+  }
 });
+
+module.exports = router;
