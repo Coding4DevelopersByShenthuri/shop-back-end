@@ -3,63 +3,61 @@ const router = express.Router();
 const authMiddleware = require('../middleware/authMiddleware');
 const cartController = require('../controllers/cartController');
 const cartService = require('../services/cartService');
+const { sendSuccess, sendError } = require('../utils/responseHelper');
 
 // Fetch cart items for the authenticated user
-router.get('/get-cart/:uid', async (req, res) => {
+router.get('/get-cart/:uid', async (req, res, next) => {
     const { uid } = req.params;
     try {
         const cartItems = await cartService.getCartItems(uid);
-        res.status(200).json(cartItems);
+        sendSuccess(res, cartItems, 'Cart items fetched successfully');
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 });
 
 // Get cart item count for the authenticated user
-router.get('/cart-count/:uid', async (req, res) => {
+router.get('/cart-count/:uid', async (req, res, next) => {
     const { uid } = req.params;
     try {
         const cartItems = await cartService.getCartItems(uid);
-        res.status(200).json({
-            count: cartItems.length // Assuming items is an array in the response
-        });
+        sendSuccess(res, { count: cartItems.length }, 'Cart count fetched successfully');
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 });
 
 // Add a product to the cart for the authenticated user
-router.post('/add-cart', async (req, res) => {
-    const { productId, userId, quantity } = req.body; // Expecting product ID and quantity in the request body
+router.post('/add-cart', async (req, res, next) => {
+    const { productId, userId, quantity } = req.body;
     try {
-        const message = await cartService.addProductToCart(userId, productId, quantity);
-        res.status(201).json(message);
+        const result = await cartService.addProductToCart(userId, productId, quantity);
+        sendSuccess(res, result, 'Product added to cart successfully', 201);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 });
 
 // Remove a specific product from the cart for the authenticated user
-router.delete('/product/:productId', async (req, res) => {
+router.delete('/product/:productId', async (req, res, next) => {
     const productId = req.params.productId;
     const { userId } = req.body; 
     try {
-        const message = await cartService.removeProductFromCart(userId, productId);
-        res.status(200).json(message);
+        const result = await cartService.removeProductFromCart(userId, productId);
+        sendSuccess(res, result, 'Product removed from cart successfully');
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 });
 
 // Clear the entire cart for the authenticated user
-router.delete('/clear-cart', async (req, res) => {
-    const userId = req.body.userId; // Get user ID from the authenticated user
-
+router.delete('/clear-cart', async (req, res, next) => {
+    const userId = req.body.userId;
     try {
-        const message = await cartService.clearCart(userId); // Implement clearCart in your service
-        res.status(200).json(message);
+        const result = await cartService.clearCart(userId);
+        sendSuccess(res, result, 'Cart cleared successfully');
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 });
 

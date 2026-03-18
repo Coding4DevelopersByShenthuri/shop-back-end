@@ -1,49 +1,46 @@
 const express = require('express');
 const router = express.Router();
-const { createUser, getUserDetails,findUserByUid,updateUserByUid } = require('../services/userService');
-const User = require('../models/userModel'); // Assuming you have a User model
+const { createUser, getUserDetails, findUserByUid, updateUserByUid } = require('../services/userService');
+const User = require('../models/userModel');
+const { sendSuccess, sendError } = require('../utils/responseHelper');
 
 // Signup route
-router.post('/createuser/:uid', async (req, res) => {
+router.post('/createuser/:uid', async (req, res, next) => {
     const { uid } = req.params;
     const { email, birthday, name } = req.body;
 
     try {
-        // Check if the user already exists
-        const existingUser = await findUserByUid(uid); // Replace with your actual function to find the user
+        const existingUser = await findUserByUid(uid);
         
         if (existingUser) {
-            // If the user exists, update their information
-            const updatedUser = await updateUserByUid(uid, { email, birthday , name}); // Replace with your actual update function
-            return res.status(200).json({ message: 'User updated successfully', updatedUser });
+            const updatedUser = await updateUserByUid(uid, { email, birthday, name });
+            sendSuccess(res, updatedUser, 'User updated successfully');
         } else {
-            // If the user does not exist, create a new one
-            const newUser = await createUser(uid, email, birthday, name); // Your existing createUser function
-            return res.status(201).json({ message: 'User created successfully', newUser });
+            const newUser = await createUser(uid, email, birthday, name);
+            sendSuccess(res, newUser, 'User created successfully', 201);
         }
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 });
 
-
 // Get user details route
-router.get('/userdetail/:uid', async (req, res) => {
+router.get('/userdetail/:uid', async (req, res, next) => {
     const { uid } = req.params;
 
     try {
         const userDetails = await getUserDetails(uid);
         if (!userDetails) {
-            return res.status(404).json({ message: 'User not found' });
+            return sendError(res, 'User not found', 404);
         }
-        res.status(200).json({ message: 'User details fetched successfully', userDetails });
+        sendSuccess(res, userDetails, 'User details fetched successfully');
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 });
 
 // Get upcoming birthdays route
-router.get('/upcoming-birthdays', async (req, res) => {
+router.get('/upcoming-birthdays', async (req, res, next) => {
     try {
         const today = new Date();
         const nextWeek = new Date(today);
@@ -53,9 +50,9 @@ router.get('/upcoming-birthdays', async (req, res) => {
             birthday: { $gte: today, $lte: nextWeek },
         });
 
-        res.status(200).json(upcomingBirthdays);
+        sendSuccess(res, upcomingBirthdays, 'Upcoming birthdays fetched successfully');
     } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch upcoming birthdays' });
+        next(error);
     }
 });
 

@@ -27,7 +27,7 @@ const findUserByUid = async (uid) => {
 const getUserDetails = async (uid) => {
     try {
         // Find user by UID
-        const user = await User.find({ uid }); // or use any method to find user based on your UID field
+        const user = await User.findOne({ uid }); // or use any method to find user based on your UID field
         if (!user) {
             return null; // User not found
         }
