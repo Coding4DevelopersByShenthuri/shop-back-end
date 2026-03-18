@@ -19,6 +19,7 @@ const wishlistRoutes = require('./routes/wishlistRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const blogRoutes = require('./routes/blogRoutes');
 const fileRoutes = require('./routes/fileRoutes');
+const errorHandler = require('./middleware/errorMiddleware');
 
 const app = express();
 
@@ -56,6 +57,9 @@ app.use('/blogs', blogRoutes);
 app.use('/carts', cartRoutes);
 app.use('/upcoming-birthdays', birthdayRoutes);
 app.use('/files', fileRoutes);
+
+// Global Error Handler
+app.use(errorHandler);
 
 if (process.env.NODE_ENV !== 'production') {
   const PORT = process.env.PORT || 3000;
