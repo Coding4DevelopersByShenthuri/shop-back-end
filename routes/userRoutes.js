@@ -56,4 +56,14 @@ router.get('/upcoming-birthdays', async (req, res, next) => {
     }
 });
 
+// Get all users
+router.get('/all-users', async (req, res, next) => {
+    try {
+        const users = await User.find();
+        sendSuccess(res, users, 'All users fetched successfully');
+    } catch (error) {
+        next(error);
+    }
+});
+
 module.exports = router;
